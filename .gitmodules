@@ -1,0 +1,3 @@
+[submodule "gitpy-versioning"]
+	path = gitpy-versioning
+	url = https://gitlab.lab.nbttech.com/steelscript/gitpy-versioning.git
