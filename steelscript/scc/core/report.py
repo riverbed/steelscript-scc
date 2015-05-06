@@ -54,7 +54,7 @@ class Report(object):
 
     def __exit__(self, type, value, traceback):
         if any([type, value, traceback]):
-            logger.exception("Exception in running %s" % self.__class__)
+            logger.exception("Exception in running %s" % self.__class__.__name)
 
 
 class BaseStatsReport(Report):
@@ -116,7 +116,6 @@ class BaseStatsReport(Report):
             if field in kwargs and kwargs[field]:
                 self.criteria[field] = kwargs[field]
 
-
     def run(self, **kwargs):
         self.fill_criteria(**kwargs)
         data_rep = self.scc.bind(self.resource)
@@ -126,6 +125,8 @@ class BaseStatsReport(Report):
 #
 # Bandwidth Reports
 #
+
+
 class BWStatsReport(BaseStatsReport):
     non_required_fields = ['traffic_type', 'port', 'devices']
 
@@ -149,6 +150,8 @@ class BWPerApplStatsReport(BaseStatsReport):
 #
 # Throughput Reports
 #
+
+
 class ThroughputStatsReport(BaseStatsReport):
     """Report class to return the peak/p95 throughput timeseries"""
     required_fields = ['device']
@@ -163,30 +166,34 @@ class ThroughputPerApplStatsReport(BaseStatsReport):
     resource = 'throughput_per_appliance'
 
 #
-# Single Device Traffic Reports
+# Timeseries Reports for Single Device
 #
-class TrafficStatsReport(BaseStatsReport):
+
+
+class TimeseriesStatsReport(BaseStatsReport):
     required_fields = ['device']
     non_required_fields = ['traffic_type']
 
 
-class ConnectionHistoryStatsReport(TrafficStatsReport):
+class ConnectionHistoryStatsReport(TimeseriesStatsReport):
     """Report class to return the max/avg connection history timeseries"""
     resource = 'connection_history'
 
 
-class SRDFStatsReport(TrafficStatsReport):
+class SRDFStatsReport(TimeseriesStatsReport):
     """Report class to return the regular/peak srdf timeseries"""
     resource = 'srdf'
 
 
-class TCPMemoryPressureReport(TrafficStatsReport):
+class TCPMemoryPressureReport(TimeseriesStatsReport):
     """Report class to return regular/peak tcp memory pressure timesries"""
     resource = 'tcp_memory_pressure'
 
 #
 # Multiple Devices Reports
 #
+
+
 class MultiDevStatsReport(BaseStatsReport):
     non_required_fields = ['devices']
 
@@ -233,6 +240,8 @@ class DiskLoadStatsReport(MultiDevStatsReport):
 #
 # Single Device Reports
 #
+
+
 class SingleDevStatsReport(BaseStatsReport):
     required_fields = ['device']
 
@@ -260,6 +269,8 @@ class PFSStatsReport(SingleDevStatsReport):
 #
 # Qos Reports
 #
+
+
 class QoSStatsReport(BaseStatsReport):
     """Report class to return the outbound/inbound qos timeseries"""
     required_fields = ['device']
@@ -270,6 +281,8 @@ class QoSStatsReport(BaseStatsReport):
 #
 # Snapmirror Reports
 #
+
+
 class SnapMirrorStatsReport(BaseStatsReport):
     """Report class to return regular/peak snapmirror timeseries"""
     required_fields = ['device']
@@ -280,6 +293,8 @@ class SnapMirrorStatsReport(BaseStatsReport):
 #
 # SteelFusion Reports
 #
+
+
 class GraniteLUNIOReport(BaseStatsReport):
     """Report class to return the granite lun io timeseries"""
     required_fields = ['device']
@@ -294,7 +309,7 @@ class GraniteInitiatorIOReport(BaseStatsReport):
     resource = 'granite_initiator_io'
 
 
-class GraniteNetworkIOReport(RegPeakTrafficStatsReport):
+class GraniteNetworkIOReport(TimeseriesStatsReport):
     """Report class to return the SteelFusion network IO timeseries"""
     resource = 'granite_network_io'
 
@@ -302,10 +317,3 @@ class GraniteNetworkIOReport(RegPeakTrafficStatsReport):
 class GraniteBlockstoreReport(GraniteLUNIOReport):
     """Report class to return the SteelFusion blockstore timeseries"""
     resource = 'granite_blockstore'
-
-
-if __name__ == '__main__':
-    from steelscript.scc.core import SCC
-    with BWUsageStatsReport(SCC('http://pfcmc.lab.nbttech.com')._svc) as report:
-        report.run(devices='12312')
-        print report.data
