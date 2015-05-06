@@ -22,8 +22,8 @@ class SCC(object):
         :param host: string, hostname or IP address of SCC, need to provide
             URL scheme, http or https, i.e. http://hostname.domain.com
         """
-        dir = os.path.dirname(__file__)
-        service_file = os.path.join(dir, 'servicedef/service.yml')
+        current_dir = os.path.dirname(__file__)
+        service_file = os.path.join(current_dir, 'servicedef/service.yml')
         svc_def = ServiceDef.create_from_file(service_file)
         conn = Connection(host)
         self._svc = Service(svc_def, host, connection=conn)
