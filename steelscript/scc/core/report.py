@@ -272,14 +272,14 @@ class QoSStatsReport(StatsReport):
 
 class SnapMirrorStatsReport(StatsReport):
     required_fields = ['device']
-    non_required_fields = ['filter_id', 'traffic_type']
+    non_required_fields = ['filer_id', 'traffic_type']
     resource = 'snapmirror'
 
     def run(self, timefilter=None, device=None,
-            filter_id=None, traffic_type=None):
+            filer_id=None, traffic_type=None):
         super(SnapMirrorStatsReport, self).run(timefilter=timefilter,
                                                device=device,
-                                               filter_id=filter_id,
+                                               filer_id=filer_id,
                                                traffic_type=traffic_type)
 
 
