@@ -79,6 +79,15 @@ class BaseStatsReport(Report):
 
     def fill_criteria(self, **kwargs):
 
+        # Ensure all passed-in params are valid params
+        valid_fields = (['timefilter'] + self.required_fields +
+                        self.non_required_fields)
+
+        for field in kwargs:
+            if field not in valid_fields:
+                raise SCCException("Criteria '%s' is not a valid field for %s"
+                                   % (field, self.__class__.__name__))
+
         if 'timefilter' not in kwargs or kwargs['timefilter'] is None:
             timefilter = TimeFilter.parse_range("last 1 hour")
         else:
@@ -107,26 +116,18 @@ class BaseStatsReport(Report):
             if field in kwargs and kwargs[field]:
                 self.criteria[field] = kwargs[field]
 
+
     def run(self, **kwargs):
         self.fill_criteria(**kwargs)
         data_rep = self.scc.bind(self.resource)
         resp = data_rep.execute('report', self.criteria)
         self.data = resp.data['response_data']
 
-"""
-Reports for bandwidth data for time-series and per port bandwidth usage
-"""
-
-
+#
+# Bandwidth Reports
+#
 class BWStatsReport(BaseStatsReport):
     non_required_fields = ['traffic_type', 'port', 'devices']
-
-    def run(self, traffic_type=None, timefilter=None, port=None,
-            devices=None):
-        super(BWStatsReport, self).run(timefilter=timefilter,
-                                       traffic_type=traffic_type,
-                                       port=port,
-                                       devices=devices)
 
 
 class BWUsageStatsReport(BWStatsReport):
@@ -145,27 +146,14 @@ class BWPerApplStatsReport(BaseStatsReport):
     non_required_fields = ['traffic_type']
     resource = 'bw_per_appliance'
 
-    def run(self, timefilter=None, devices=None, traffic_type=None):
-        super(BWPerApplStatsReport, self).run(timefilter=timefilter,
-                                              devices=devices,
-                                              traffic_type=traffic_type)
-
-"""
-Throughput Reports
-"""
-
-
+#
+# Throughput Reports
+#
 class ThroughputStatsReport(BaseStatsReport):
     """Report class to return the peak/p95 throughput timeseries"""
     required_fields = ['device']
     non_required_fields = ['traffic_type', 'port']
     resource = 'throughput'
-
-    def run(self, device=None, timefilter=None,  traffic_type=None, port=None):
-        super(ThroughputStatsReport, self).run(device=device,
-                                               timefilter=timefilter,
-                                               traffic_type=traffic_type,
-                                               port=port)
 
 
 class ThroughputPerApplStatsReport(BaseStatsReport):
@@ -174,50 +162,33 @@ class ThroughputPerApplStatsReport(BaseStatsReport):
     non_required_fields = ['traffic_type']
     resource = 'throughput_per_appliance'
 
-    def run(self, devices=None, timefilter=None,  traffic_type=None):
-        super(ThroughputPerApplStatsReport, self).run(
-            devices=devices, timefilter=timefilter, traffic_type=traffic_type)
-
-"""
-Reports for data of a single device based on traffic_type
-"""
-
-
-class RegPeakTrafficStatsReport(BaseStatsReport):
+#
+# Single Device Traffic Reports
+#
+class TrafficStatsReport(BaseStatsReport):
     required_fields = ['device']
     non_required_fields = ['traffic_type']
 
-    def run(self, timefilter=None, device=None, traffic_type=None):
-        super(RegPeakTrafficStatsReport, self).run(timefilter=timefilter,
-                                                   device=device,
-                                                   traffic_type=traffic_type)
 
-
-class ConnectionHistoryStatsReport(RegPeakTrafficStatsReport):
+class ConnectionHistoryStatsReport(TrafficStatsReport):
     """Report class to return the max/avg connection history timeseries"""
     resource = 'connection_history'
 
 
-class SRDFStatsReport(RegPeakTrafficStatsReport):
+class SRDFStatsReport(TrafficStatsReport):
     """Report class to return the regular/peak srdf timeseries"""
     resource = 'srdf'
 
 
-class TCPMemoryPressureReport(RegPeakTrafficStatsReport):
+class TCPMemoryPressureReport(TrafficStatsReport):
     """Report class to return regular/peak tcp memory pressure timesries"""
     resource = 'tcp_memory_pressure'
 
-"""
-Reports for data about muliple devices, no traffic type specified
-"""
-
-
+#
+# Multiple Devices Reports
+#
 class MultiDevStatsReport(BaseStatsReport):
     non_required_fields = ['devices']
-
-    def run(self, timefilter=None, devices=None):
-        super(MultiDevStatsReport, self).run(timefilter=timefilter,
-                                             devices=devices)
 
 
 class ConnectionPoolingStatsReport(MultiDevStatsReport):
@@ -259,17 +230,11 @@ class DiskLoadStatsReport(MultiDevStatsReport):
     """Report class to return disk load timeseries"""
     resource = 'disk_load'
 
-"""
-Reports for data about a single device, no traffic type specified
-"""
-
-
+#
+# Single Device Reports
+#
 class SingleDevStatsReport(BaseStatsReport):
     required_fields = ['device']
-
-    def run(self, timefilter=None, device=None):
-        super(SingleDevStatsReport, self).run(timefilter=timefilter,
-                                              device=device)
 
 
 class SDRAdaptiveStatsReport(SingleDevStatsReport):
@@ -292,61 +257,34 @@ class PFSStatsReport(SingleDevStatsReport):
     resource = 'pfs'
 
 
-"""
-Reports for querying Qos data.
-"""
-
-
+#
+# Qos Reports
+#
 class QoSStatsReport(BaseStatsReport):
     """Report class to return the outbound/inbound qos timeseries"""
     required_fields = ['device']
     non_required_fields = ['qos_class_id', 'traffic_type']
     resource = 'qos'
 
-    def run(self, timefilter=None, device=None,
-            qos_class_id=None, traffic_type=None):
-        super(QoSStatsReport, self).run(timefilter=timefilter,
-                                        device=device,
-                                        qos_class_id=qos_class_id,
-                                        traffic_type=traffic_type)
 
-
-"""
-Reports for querying regular/peak data for a single device
-"""
-
-
+#
+# Snapmirror Reports
+#
 class SnapMirrorStatsReport(BaseStatsReport):
     """Report class to return regular/peak snapmirror timeseries"""
     required_fields = ['device']
     non_required_fields = ['filer_id', 'traffic_type']
     resource = 'snapmirror'
 
-    def run(self, timefilter=None, device=None,
-            filer_id=None, traffic_type=None):
-        super(SnapMirrorStatsReport, self).run(timefilter=timefilter,
-                                               device=device,
-                                               filer_id=filer_id,
-                                               traffic_type=traffic_type)
 
-
-"""
-Reports for SteelFusion data.
-"""
-
-
+#
+# SteelFusion Reports
+#
 class GraniteLUNIOReport(BaseStatsReport):
     """Report class to return the granite lun io timeseries"""
     required_fields = ['device']
     non_required_fields = ['traffic_type', 'lun_subclass_id']
     resource = 'granite_lun_io'
-
-    def run(self, timefilter=None, device=None,
-            lun_subclass_id=None, traffic_type=None):
-        super(GraniteLUNIOReport, self).run(timefilter=timefilter,
-                                            device=device,
-                                            lun_subclass_id=lun_subclass_id,
-                                            traffic_type=traffic_type)
 
 
 class GraniteInitiatorIOReport(BaseStatsReport):
@@ -354,13 +292,6 @@ class GraniteInitiatorIOReport(BaseStatsReport):
     required_fields = ['device']
     non_required_fields = ['traffic_type', 'initiator_subclass_id']
     resource = 'granite_initiator_io'
-
-    def run(self, timefilter=None, device=None,
-            initiator_subclass_id=None, traffic_type=None):
-        super(GraniteInitiatorIOReport, self).run(
-            timefilter=timefilter, device=device,
-            initiator_subclass_id=initiator_subclass_id,
-            traffic_type=traffic_type)
 
 
 class GraniteNetworkIOReport(RegPeakTrafficStatsReport):
@@ -371,3 +302,10 @@ class GraniteNetworkIOReport(RegPeakTrafficStatsReport):
 class GraniteBlockstoreReport(GraniteLUNIOReport):
     """Report class to return the SteelFusion blockstore timeseries"""
     resource = 'granite_blockstore'
+
+
+if __name__ == '__main__':
+    from steelscript.scc.core import SCC
+    with BWUsageStatsReport(SCC('http://pfcmc.lab.nbttech.com')._svc) as report:
+        report.run(devices='12312')
+        print report.data
