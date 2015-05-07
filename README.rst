@@ -8,9 +8,9 @@ Steelscript for Python.
 License
 =======
 
-Copyright (c) 2014 Riverbed Technology, Inc.
+Copyright (c) 2015 Riverbed Technology, Inc.
 
-SteelScript-NetProfiler is licensed under the terms and conditions of the MIT
-License accompanying the software ("License").  SteelScript-NetProfiler is
+SteelScript-SCC is licensed under the terms and conditions of the MIT
+License accompanying the software ("License").  SteelScript-SCC is
 distributed "AS IS" as set forth in the License.
 
