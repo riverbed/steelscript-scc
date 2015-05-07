@@ -1,0 +1,9 @@
+build
+dist
+*.egg-info
+RELEASE-VERSION
+
+*~
+*.pyc
+*.swp
+.DS_Store

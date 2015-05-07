@@ -1,0 +1,1318 @@
+$schema: 'http://support.riverbed.com/apis/service_def/2.2'
+id: 'http://support.riverbed.com/apis/cmc.stats/1.0'
+provider: 'riverbed'
+name: cmc.stats
+version: "1.0"
+title: REST API for SCC Stats Service
+
+types:
+    port:
+        type: integer
+        description: 'Port number'
+        minimum: 1
+        maximum: 65535
+
+    device_id:
+        type: string
+        description: "Case sensitive Device ID.  Only alphanumeric permitted."
+        pattern: '^[a-zA-Z0-9]+$'
+
+    granularity:
+        type: integer
+        description: 'Specifies the granularity between successive time-series data'
+        enum: [300, 3600]
+
+    bw_criteria:
+        type: object
+        description: "A list of fields to be defined in the request body when querying bandwidth data for time-series and per port bandwidth usage"
+        properties:
+            start_time: {type: timestamp}
+            end_time: {type: timestamp}
+            traffic_type:
+                type: string
+                description: 'Determines whether the query is for optimized traffic or the pass through'
+                enum: [ 'optimized', 'passthrough' ]
+                default: 'optimized'
+            port: {$ref: '#/types/port'}
+            devices:
+                type: array
+                description: '''
+                             An array of devices being queried on. None implies all devices.
+                             If multiple devices are queried on, the data points are the sum across all the devices.
+                             This is optionally used in bandwidth usage and bw time-series queries.
+                             '''
+                items: {$ref: '#/types/device_id'}
+        required: [ start_time, end_time ]
+        # For per port bandwidth usage query, the port parameter is irrelevant and ignored if specified.
+        # For timeseries data, the port field, if not specified, defaults to 0.
+
+    per_appl_bw_criteria:
+        type: object
+        description: >
+                     A list of fields to be defined in the request body when
+                     querying the per appliance bw data
+        properties:
+            start_time: {type: timestamp}
+            end_time: {type: timestamp}
+            traffic_type:
+                type: string
+                description: >
+                             Determines whether the query is for
+                             optimized traffic or the pass through
+                enum: [ 'optimized', 'passthrough' ]
+                default: 'optimized'
+            devices:
+                type: array
+                description: >
+                             An array of devices being queried on.
+                             When multiple devices are queried on, the data
+                             points are returned for each of the devices.
+                items: {$ref: '#/types/device_id'}
+        required: [ start_time, end_time, devices ]
+
+    throughput_criteria:
+        type: object
+        description: "A list of fields to be defined in the request body when querying for the through-put data."
+        properties:
+            start_time: {type: timestamp}
+            end_time: {type: timestamp}
+            traffic_type:
+                type: string
+                description: 'Determines whether the query is for peak traffic or the p95'
+                enum: [ 'peak', 'p95' ]
+                default: 'peak'
+            port: {$ref: '#/types/port'}
+            device: {$ref: '#/types/device_id'}
+        required: [ start_time, end_time, device ]
+
+    per_appl_thrput_criteria:
+        type: object
+        description: >
+                     A list of fields to be defined in the request body when
+                     querying for the per appliance through-put data.
+        properties:
+            start_time: {type: timestamp}
+            end_time: {type: timestamp}
+            traffic_type:
+                type: string
+                description: >
+                             Determines whether the query is for
+                             peak traffic or the p95.
+                enum: [ 'peak', 'p95' ]
+                default: 'peak'
+            devices:
+                type: array
+                description: >
+                             An array of devices being queried on.
+                             When multiple devices are queried on, the data
+                             points are returned for each of the devices.
+                items: {$ref: '#/types/device_id'}
+        required: [ start_time, end_time, devices ]
+
+    connection_history_criteria:
+        type: object
+        description: "A list of fields to be defined in the request body when querying for the connection history"
+        properties:
+            start_time: {type: timestamp}
+            end_time: {type: timestamp}
+            traffic_type:
+                type: string
+                description: 'Determines whether the query is for avg or max stats in the connection history'
+                enum: [ 'max', 'total' ]
+                default: 'max'
+            device: {$ref: '#/types/device_id'}
+        required: [ start_time, end_time, device ]
+
+    multiple_devices_criteria:
+        type: object
+        description: "A generic list of fields to be defined in the request body when querying for multiple devices, no traffic type specified, time-series data"
+        properties:
+            start_time: {type: timestamp}
+            end_time: {type: timestamp}
+            devices:
+                type: array
+                description: '''
+                             An array of devices being queried on. None implies all devices.
+                             If multiple devices are queried on, the data points are the sum across all the devices.
+                             '''
+                items: {$ref: '#/types/device_id'}
+        required: [ start_time, end_time ]
+
+    multiple_devices_response_data:
+        type: object
+        description: '''
+                     This object is used to hold the response data of the multiple_devices_criteria queries with the generic characteristics of:
+                         1. multiple devices being queried upon
+                         2. do not specify a "traffic_type"
+                         3. do not specify a "subclass"
+                     Currently, this is being used to hold the response data of:
+                         1. HTTP time-series data for a specified set of devices
+                         2. NFS time-series data for a specified set of devices
+                         3. SSL time-series data for a specified set of devices
+                         4. connection_pooling time-series data for a specified set of devices
+                         5. connection_forwarding time-series data for a specified set of devices
+                         6. disk_load time-series data for a specified set of devices
+                         7. DNS usage time-series data for a specified set of devices
+                         8. DNS cache hits time-series data for a specified set of devices
+                     '''
+        properties:
+            query_criteria: {$ref: '#/types/multiple_devices_criteria'}
+            granularity: {$ref: '#/types/granularity'}
+            response_data:
+                type: array
+                description: '''
+                             Each element in this array is one of the following:
+                                 1. {timestamp, http_data} tuple containing the timestamp and HTTP data at that time
+                                 2. {timestamp, nfs_data} tuple containing the timestamp and NFS data at that time
+                                 3. {timestamp, ssl_data} tuple containing the timestamp and SSL data at that time
+                                 4. {timestamp, connection_pooling_data} tuple containing the timestamp and connection pooling data at that time
+                                 5. {timestamp, connection_forwarding_data} tuple containing the timestamp and connection forwarding data at that time
+                                 6. {timestamp, disk_load_data} tuple containing the timestamp and disk load data at that time
+                                 7. {timestamp, dns_usage_data} tuple containing the timestamp and dns usage data at that time
+                                 8. {timestamp, dns_cache_hits_data} tuple containing the timestamp and dns cache hits data at that time
+                             '''
+
+                items:
+                    type: object
+                    properties:
+                        timestamp:
+                            type: timestamp
+                            description: "The epoch timestamp of this data point"
+                        data:
+                            type: array
+                            description: '''
+                                         The [parse-and-prefetch_hits, misses, metadata_cache_hits, url-learning_hits] 4-tuple,
+                                         exactly in that order, for each datapoint for HTTP.
+                                         OR
+                                         The [local_responses, delayed_responses, remote_responses, total_calls] 4-tuple,
+                                         exactly in that order, for each datapoint for NFS.
+                                         OR
+                                         The [total_session_requests, established_sessions, blacklist_table_overflows] 3-tuple,
+                                         exactly in that order, for each datapoint for SSL.
+                                         OR
+                                         The [total_connection_requests, reused_connections] 2-tuple,
+                                         exactly in that order, for each datapoint for connection pool.
+                                         OR
+                                         The [packets_sent, bytes_sent] 2-tuple,
+                                         exactly in that order, for each datapoint for connection forwarding.
+                                         OR
+                                         The [load] 1-tuple,
+                                         for each datapoint for disk load.
+                                         OR
+                                         The [num_of_entries_in_cache, bytes_of_used_memory_in_cache] 2-tuple,
+                                         exactly in that order, for each datapoint for DNS usage.
+                                         OR
+                                         The [success, referral, nxrrset, nxdomain, recursion, failure, miss] 7-tuple,
+                                         in exactly the given order,
+                                         for each datapoint for DNS cache hits.
+                                         '''
+                            items:
+                                type: number
+
+    single_device_criteria:
+        type: object
+        description: "A generic list of fields to be defined in the request body when querying for a single device, no traffic type specified, timeseries data"
+        properties:
+            start_time: {type: timestamp}
+            end_time: {type: timestamp}
+            device: {$ref: '#/types/device_id'}
+        required: [ start_time, end_time, device ]
+
+    single_device_response_data:
+        type: object
+        description: '''
+                     This object is used to hold the response data of the single_device_criteria queries with the generic characteristics of:
+                         1. single device being queried upon
+                         2. do not specify a "traffic_type"
+                         3. do not specify a "subclass"
+                     Currently, this is being used to hold the response data of:
+                         1. cpu_utilization timeseries data for a specified device
+                         2. memory_paging timeseries data for a specified device
+                         3. pfs timeseries data for a specified device
+                         4. sdr_adaptive timeseries data for a specified device
+                     '''
+        properties:
+            query_criteria: {$ref: '#/types/single_device_criteria'}
+            granularity: {$ref: '#/types/granularity'}
+            response_data:
+                type: array
+                description: '''
+                             Each element in this array is one of the following:
+                                 1. {timestamp, cpu_utilization_data} tuple containing the timestamp and CPU utilization data at that time
+                                 2. {timestamp, memory_paging_data} tuple containing the timestamp and memory paging data at that time
+                                 3. {timestamp, pfs_data} tuple containing the timestamp and PFS data at that time
+
+                                 4. {timestamp, sdr_adaptive} tuple containing the timestamp and sdr_adaptive data at that time
+                             '''
+
+                items:
+                    type: object
+                    properties:
+                        timestamp:
+                            type: timestamp
+                            description: "The epoch timestamp of this datapoint"
+                        data:
+                            type: array
+                            description: '''
+                                         The [cpu_utilization_percentage] 1-tuple,
+                                         for each datapoint for CPU utlization.
+                                         OR
+                                         The [num_of_pages_swapped_out] 1-tuple,
+                                         for each datapoint for memory paging.
+                                         OR
+                                         The [share_size, bytes_received, bytes_sent] 3-tuple,
+                                         exactly in that order, for each datapoint for PFS data.
+                                         OR
+                                         The [disk_pressure_only_compression, in_path_rule_only_compression,
+                                              disk_pressure_only_in_mem_sdr, in_path_rule_only_in_mem_sdr] 4-tuple,
+                                         for each datapoint for sdr_adaptive.
+                                         '''
+                            items:
+                                type: number
+
+    reg_and_peak_traffic_type:
+        type: string
+        description: 'Determines whether the query is for regular/peak traffic.'
+        enum: [ 'regular', 'peak' ]
+        default: 'regular'
+
+    reg_and_peak_traffic_criteria:
+        type: object
+        description: "A list of fields to be defined in the request body when querying for the regular/peak time-series data for a single device"
+        properties:
+            start_time: {type: timestamp}
+            end_time: {type: timestamp}
+            traffic_type: {$ref: '#/types/reg_and_peak_traffic_type'}
+            device: {$ref: '#/types/device_id'}
+        required: [ start_time, end_time, device ]
+
+    reg_and_peak_response_data:
+        type: object
+        description: '''
+                     This object is used to hold the response data of the reg_and_peak_traffic_criteria queries with the generic characteristics of:
+                         1. single device being queried upon
+                         2. specify a "regular" (default) or peak "traffic_type"
+                         3. do not specify a "subclass"
+                     Currently, this is being used to hold the response data of:
+                         1. regular/peak srdf timeseries data for a specified device
+                         2. regular/peak tcp_memory_pressure timeseries data for a specified device
+                     '''
+
+        properties:
+            query_criteria: {$ref: '#/types/reg_and_peak_traffic_criteria'}
+            granularity: {$ref: '#/types/granularity'}
+            response_data:
+            response_data:
+                type: array
+                description: '''
+                             Each element in this array is one of the following:
+                                 1. {timestamp, srdf_data} tuple containing the timestamp and regular/peak SRDF data at that time
+                                 2. {timestamp, tcp_memory_pressure_data} tuple containing the timestamp and regular/peak tcp memory pressure data at that time
+                             '''
+
+                items:
+                    type: object
+                    properties:
+                        timestamp:
+                            type: timestamp
+                            description: "The epoch timestamp of this datapoint"
+                        data:
+                            type: array
+                            description: '''
+                                         The [lan_bytes, wan_bytes] 2-tuple,
+                                         exactly in that order, for each datapoint for regular/peak SRDF data.
+                                         OR
+                                         The [num_of_pages_used, PCT_time_spent_under_pressure] 2-tuple,
+                                         exactly in that order, for each datapoint for regular TCP memory pressure data.
+                                         OR
+                                         The [enable_threshold, cutoff_threshold, max_threshold] 3-tuple,
+                                         exactly in that order, for each datapoint for peak TCP memory pressure data.
+                                         '''
+                            items:
+                                type: number
+
+
+    qos_criteria:
+        type: object
+        description: "A list of fields to be defined in the request body when querying for the QoS data"
+        properties:
+            start_time: {type: timestamp}
+            end_time: {type: timestamp}
+            qos_class_id: {type: integer}
+            traffic_type:
+                type: string
+                description: 'Determines whether the query is for outbound/inbound QoS traffic'
+                enum: [ 'outbound', 'inbound' ]
+                default: 'outbound'
+            device: {$ref: '#/types/device_id'}
+        required: [ start_time, end_time, device ]
+
+    snapmirror_traffic_type_criteria:
+        type: object
+        description: "A list of fields to be defined in the request body when querying for the regular/peak timeseries data for a single device"
+        properties:
+            start_time: {type: timestamp}
+            end_time: {type: timestamp}
+            filer_id: {type: integer}
+            traffic_type: {$ref: '#/types/reg_and_peak_traffic_type'}
+            device: {$ref: '#/types/device_id'}
+        required: [ start_time, end_time, device ]
+
+    granite_io_traffic_type:
+        type: string
+        description: 'Determines whether the query is for io/iops/io_time lun/initiator io traffic'
+        enum: [ 'io', 'iops', 'io_time' ]
+        default: 'io'
+
+    lun_io_criteria:
+        type: object
+        description: "A list of fields to be defined in the request body when querying for the SteelFusion LUN IO data"
+        properties:
+            start_time: {type: timestamp}
+            end_time: {type: timestamp}
+            traffic_type: {$ref: '#/types/granite_io_traffic_type'}
+            lun_subclass_id: {type: integer}
+            device: {$ref: '#/types/device_id'}
+        required: [ start_time, end_time, device ]
+
+    lun_io_response_data:
+        type: object
+        description: '''
+                     This object holds the io/iops/io_time lun/initiator io data
+                     for a specified device. If no traffic type is
+                     specified, it defaults to io operations performed (io) lun/initiator io data.
+                     If no lun_subclass_id is specified, it defaults to lun_subclass_id 0.
+                     '''
+        properties:
+            query_criteria: {$ref: '#/types/lun_io_criteria'}
+            granularity: {$ref: '#/types/granularity'}
+            response_data:
+                type: array
+                description: "Each element in this array is a {timestamp, lun/initiator_io_data} tuple containing the timestamp and lun/initiator IO data at that time"
+
+                items:
+                    type: object
+                    properties:
+                        timestamp:
+                            type: timestamp
+                            description: "The epoch timestamp of this datapoint"
+                        data:
+                            type: array
+                            description: '''
+                                         The [num_of_reads, num_of_writes] 2-tuple for each data point for io/iops/io_time lun/initiator io data.
+                                         '''
+                            items:
+                                type: number
+
+    initiator_io_criteria:
+        type: object
+        description: "A list of fields to be defined in the request body when querying for the SteelFusion lun/initiator IO data"
+        properties:
+            start_time: {type: timestamp}
+            end_time: {type: timestamp}
+            traffic_type: {$ref: '#/types/granite_io_traffic_type'}
+            initiator_subclass_id: {type: integer}
+            device: {$ref: '#/types/device_id'}
+        required: [ start_time, end_time, device ]
+
+    network_io_criteria:
+        type: object
+        description: "A list of fields to be defined in the request body when querying for the SteelFusion network IO data"
+        properties:
+            start_time: {type: timestamp}
+            end_time: {type: timestamp}
+            traffic_type:
+                type: string
+                description: 'Determines whether the query is for throughput/prefetch network IO traffic'
+                enum: [ 'throughput', 'prefetch' ]
+                default: 'throughput'
+            device: {$ref: '#/types/device_id'}
+        required: [ start_time, end_time, device ]
+
+    blockstore_criteria:
+        type: object
+        description: "A list of fields to be defined in the request body when querying for the SteelFusion blockstore data"
+        properties:
+            start_time: {type: timestamp}
+            end_time: {type: timestamp}
+            traffic_type:
+                type: string
+                description: 'Determines whether the query is for hit_miss/uncmtd_first_classid/uncmtd_last_classid/commit_throughput/commit_delay blockstore traffic'
+                enum: [ 'hit_miss', 'uncmtd_first_classid', 'uncmtd_last_classid', 'commit_throughput', 'commit_delay' ]
+                default: 'commit_throughput'
+            lun_subclass_id: {type: integer}
+            device: {$ref: '#/types/device_id'}
+        required: [ start_time, end_time, device ]
+
+    logging_level:
+        type: string
+        description: Severity levels for logs emitted by the service
+        enum: ['crit', 'err', 'warning', 'notice', 'info', 'debug']
+
+resources:
+  bw_usage:
+    description: "Depicts the bandwidth usage"
+
+    type: object
+    additionalProperties: False
+
+    links:
+        self:
+            path: "$/bandwidth/usage"
+
+        report:
+            description: "This is a report that returns a report of the per port bandwidth usage for a given list of devices. It returns the usage for all the devices if no devices are specified."
+            method: POST
+            request:
+                $ref: '#/types/bw_criteria'
+
+            response:
+                type: object
+                description: "This object holds the per port bandwidth utilization summary for a set of devices(or all if none specified)."
+
+                properties:
+                    query_criteria: {$ref: '#/types/bw_criteria'}
+                    response_data:
+                        type: array
+                        description: '''
+                                     The [wan_in, wan_out, lan_in, lan_out] 4-tuple summary for optimized. The [bytes_in, bytes_out] 2-tuple summary for pass through
+
+                                     The "in" and "out" signify the traffic direction (and not the SH interfaces).
+                                     "in" refers to inbound traffic i.e. WAN to LAN.
+                                     "out" refers to outbound traffic i.e. LAN to WAN
+
+                                     lan_in and wan_in are the inbound traffic stats.
+                                     lan_out and wan_out are the outbound traffic stats.
+
+                                     In the case of pass through traffic, lan_in = wan_in and lan_out = wan_out.
+                                     Hence, we have only 2 values representing stats in each direction.
+                                     bytes_in is the inbound traffic.
+                                     bytes_out is the outbound traffic.
+                                     '''
+                        items:
+                            type: object
+                            properties:
+                                port:
+                                    $merge:
+                                        source: { $ref: '#/types/port' }
+                                        with: { description: "The port this data is being collected on" }
+                                data:
+                                    type: array
+                                    description: "The [wan_in, wan_out, lan_in, lan_out] 4-tuple summary for optimized. The [bytes_in, bytes_out] 2-tuple summary for pass through"
+                                    items:
+                                        type: number
+
+
+  bw_timeseries:
+    description: "Depicts the bandwidth timeseries"
+
+    type: object
+    additionalProperties: False
+
+    links:
+        self:
+            path: "$/bandwidth/timeseries"
+
+        report:
+            description: "This is a report that returns a time-series report for a given list of devices on a specific port. It returns for port 0 is no port has been specified."
+            method: POST
+            request:
+                $ref: '#/types/bw_criteria'
+
+            response:
+                type: object
+                description: "This object holds the per data point bandwidth utilization on a given port(or 0 if not specified) for a specific set of devices(or all if none specified)."
+
+                properties:
+                    granularity: {$ref: '#/types/granularity'}
+                    response_data :
+                        type: array
+                        description: "Each element in this array is a {timestamp, bw_timeseries_data} tuple containing the timestamp and total bandwidth utilization at that time"
+
+                        items:
+                            type: object
+                            properties:
+                                timestamp:
+                                    type: timestamp
+                                    description: "The epoch timestamp of this datapoint"
+                                data:
+                                    type: array
+                                    description: '''
+                                                 The [wan_in, wan_out, lan_in, lan_out] 4-tuple for each datapoint for optimized. The [bytes_in, bytes_out] 2-tuple for passthrough
+                                                 These fields are explained in detail above, in the bw_usage_response_data section.
+                                                 '''
+                                    items:
+                                        type: number
+
+
+  throughput:
+    description: "Depicts the peak/p95 throughput timeseries"
+
+    type: object
+    additionalProperties: False
+
+    links:
+        self:
+            path: "$/throughput"
+
+        report:
+            description: "This is a report that returns the peak/p95 time-series report for a given device on a specific port. It returns for port 0 is no port has been specified. It returns peak traffic type if not traffic type is specified."
+            method: POST
+            request:
+                $ref: '#/types/throughput_criteria'
+
+            response:
+                type: object
+                description: '''
+                             This object holds the throughput traffic time-series data for traffic type peak or p95
+                             on a given port(or 0 if not specified) for a specified device. If no traffic type is
+                             specified, it defaults to peak traffic.
+                             '''
+                properties:
+                    query_criteria: {$ref: '#/types/throughput_criteria'}
+                    granularity: {$ref: '#/types/granularity'}
+                    response_data:
+                        type: array
+                        description: "Each element in this array is a {timestamp, throughput_data} tuple containing the timestamp and throughput at that time"
+
+                        items:
+                            type: object
+                            properties:
+                                timestamp:
+                                    type: timestamp
+                                    description: "The epoch timestamp of this data point"
+                                data:
+                                    type: array
+                                    description: '''
+                                                 The [wan_in, wan_out, lan_in, lan_out] 4-tuple for each data point for optimized.
+                                                 These fields are explained in detail above, in the bw_usage_response_data section.
+                                                 Please note that we do not maintain the peak throughput for passthrough data,
+                                                 and thus, would never have 2-tuples for this data.
+                                                 '''
+                                    items:
+                                        type: number
+
+  connection_history:
+    description: "Depicts the max/avg connection history timeseries"
+
+    type: object
+    additionalProperties: False
+
+    links:
+        self:
+            path: "$/connection_history"
+
+        report:
+            description: '''
+                         This is a report that returns the avg/max connection history timeseries report for a given device.
+                         It returns avg traffic type if no traffic type is specified.
+                         '''
+            method: POST
+            request:
+                $merge:
+                    source: { $ref: '#/types/connection_history_criteria' }
+                    with:
+                        description: '''
+                                     The start_time, end_time and device are mandatory fields in the request.
+                                     A traffic_type can optionally be specified to be either max or avg.
+                                     If not specified, it defaults to avg.
+                                     '''
+
+            response:
+                "type": object
+
+                "properties":
+                    query_criteria: {$ref: '#/types/connection_history_criteria'}
+                    granularity: {$ref: '#/types/granularity'}
+                    response_data :
+                        type: array
+                        description: "Each element in this array is a {timestamp, conn_history_data} tuple containing the timestamp and the connection history at that time"
+
+                        items:
+                            type: object
+                            properties:
+                                timestamp:
+                                    type: timestamp
+                                    description: "The epoch timestamp of this datapoint"
+                                data:
+                                    type: array
+                                    description: '''
+                                                 The [optimized_connections, passthrough_connections, active_connections, forwarded_connections,
+                                                      half_open_connections, half_closed_connections, flowing_connections]
+                                                 7-tuple, exactly in that order, for each datapoint for avg/max connection history.
+                                                 '''
+                                    items:
+                                        type: number
+
+  connection_pooling:
+    description: "Depicts the connection pooling timeseries"
+
+    type: object
+    additionalProperties: False
+
+    links:
+        self:
+            path: "$/connection_pooling"
+
+        report:
+            description: "This is a report that returns the connection pooling time-series report for a given list of devices. It returns the aggregate for all the devices if none are specified."
+            method: POST
+            request:
+                $ref: '#/types/multiple_devices_criteria'
+
+            response:
+                $ref: '#/types/multiple_devices_response_data'
+
+  connection_forwarding:
+    description: "Depicts the connection forwarding timeseries"
+
+    type: object
+    additionalProperties: False
+
+    links:
+        self:
+            path: "$/connection_forwarding"
+
+        report:
+            description: "This is a report that returns the connection forwarding time-series report for a given list of devices. It returns the aggregate for all the devices if none are specified."
+            method: POST
+            request:
+                $ref: '#/types/multiple_devices_criteria'
+
+            response:
+                $ref: '#/types/multiple_devices_response_data'
+
+  http:
+    description: "Depicts the http timeseries"
+
+    type: object
+    additionalProperties: False
+
+    links:
+        self:
+            path: "$/http"
+
+        report:
+            description: "This is a report that returns the http time-series report for a given list of devices. It returns the aggregate for all the devices if none are specified."
+            method: POST
+            request:
+                $ref: '#/types/multiple_devices_criteria'
+
+            response:
+                $ref: '#/types/multiple_devices_response_data'
+
+  nfs:
+    description: "Depicts the nfs timeseries"
+
+    type: object
+    additionalProperties: False
+
+    links:
+        self:
+            path: "$/nfs"
+
+        report:
+            description: "This is a report that returns the NFS time-series report for a given list of devices. It returns the aggregate for all the devices if none are specified."
+            method: POST
+            request:
+                $ref: '#/types/multiple_devices_criteria'
+
+            response:
+                $ref: '#/types/multiple_devices_response_data'
+
+  ssl:
+    description: "Depicts the ssl timeseries"
+
+    type: object
+    additionalProperties: False
+
+    links:
+        self:
+            path: "$/ssl"
+
+        report:
+            description: "This is a report that returns the ssl time-series report for a given list of devices. It returns the aggregate for all the devices if none are specified."
+            method: POST
+            request:
+                $ref: '#/types/multiple_devices_criteria'
+
+            response:
+                $ref: '#/types/multiple_devices_response_data'
+
+
+  disk_load:
+    description: "Depicts the disk load timeseries"
+
+    type: object
+    additionalProperties: False
+
+    links:
+        self:
+            path: "$/disk_load"
+
+        report:
+            description: "This is a report that returns the disk load time-series report for a given list of devices. It returns the aggregate for all the devices if none are specified."
+            method: POST
+            request:
+                $ref: '#/types/multiple_devices_criteria'
+
+            response:
+                $ref: '#/types/multiple_devices_response_data'
+
+  sdr_adaptive:
+    description: "Depicts the SDR Adaptive timeseries"
+
+    type: object
+    additionalProperties: False
+
+    links:
+        self:
+            path: "$/sdr_adaptive"
+
+        report:
+            description: "This is a report that returns the sdr adaptive time-series report for a given list of devices. It returns the aggregate for all the devices if none are specified."
+            method: POST
+            request:
+                $ref: '#/types/single_device_criteria'
+
+            response:
+                $ref: '#/types/single_device_response_data'
+
+
+  memory_paging:
+    description: "Depicts the memory paging timeseries"
+
+    type: object
+    additionalProperties: False
+
+    links:
+        self:
+            path: "$/memory_paging"
+
+        report:
+            description: "This is a report that returns the memory paging time-series report for a given device."
+            method: POST
+            request:
+                $ref: '#/types/single_device_criteria'
+
+            response:
+                $ref: '#/types/single_device_response_data'
+
+  cpu_utilization:
+    description: "Depicts the cpu utilization timeseries"
+
+    type: object
+    additionalProperties: False
+
+    links:
+        self:
+            path: "$/cpu_utilization"
+
+        report:
+            description: "This is a report that returns the cpu utilization time-series report for a given device."
+            method: POST
+            request:
+                $ref: '#/types/single_device_criteria'
+
+            response:
+                $ref: '#/types/single_device_response_data'
+
+  pfs:
+    description: "Depicts the pfs timeseries"
+
+    type: object
+    additionalProperties: False
+
+    links:
+        self:
+            path: "$/pfs"
+
+        report:
+            description: "This is a report that returns the pfs time-series report for a given device."
+            method: POST
+            request:
+                $ref: '#/types/single_device_criteria'
+
+            response:
+                $ref: '#/types/single_device_response_data'
+
+  srdf:
+    description: "Depicts the regular/peak srdf timeseries"
+
+    type: object
+    additionalProperties: False
+
+    links:
+        self:
+            path: "$/srdf"
+
+        report:
+            description: "This is a report that returns the regular/peak srdf time-series report for a given device. It returns regular srdf data if the traffic type if not specified as 'peak'."
+            method: POST
+            request:
+                $ref: '#/types/reg_and_peak_traffic_criteria'
+
+            response:
+                $ref: '#/types/reg_and_peak_response_data'
+
+
+  snapmirror:
+    description: "Depicts the regular/peak snapmirror timeseries"
+
+    type: object
+    additionalProperties: False
+
+    links:
+        self:
+            path: "$/snapmirror"
+
+        report:
+            description: '''
+                         This is a report that returns the regular/peak Snapmirror time-series report for a given device.
+                         It returns regular Snapmirror data if the traffic type if not specified as "peak".
+                         '''
+            method: POST
+            request:
+                $ref: '#/types/snapmirror_traffic_type_criteria'
+
+            response:
+                type: object
+                description: '''
+                             This object holds the regular/peak Snapmirror data
+                             for a specified device. If no traffic type is
+                             specified, it defaults to regular traffic.
+                             If no filer_id is specified, it defaults to filer_id 0.
+                             '''
+                properties:
+                    query_criteria: {$ref: '#/types/snapmirror_traffic_type_criteria'}
+                    granularity: {$ref: '#/types/granularity'}
+                    response_data:
+                        type: array
+                        description: "Each element in this array is a {timestamp, snapmirror_data} tuple containing the timestamp and regular/peak snapmirror data at that time"
+
+                        items:
+                            type: object
+                            properties:
+                                timestamp:
+                                    type: timestamp
+                                    description: "The epoch timestamp of this datapoint"
+                                data:
+                                    type: array
+                                    description: '''
+                                                 The [lan_bytes, wan_bytes] 2-tuple for each datapoint for regular srdf data.
+                                                 '''
+                                    items:
+                                        type: number
+
+  tcp_memory_pressure:
+    description: "Depicts the regular/peak tcp memory pressure timeseries"
+
+    type: object
+    additionalProperties: False
+
+    links:
+        self:
+            path: "$/tcp_memory_pressure"
+
+        report:
+            description: "This is a report that returns the regular/peak TCP memory pressure time-series report for a given device. It returns regular tcp memory pressure data if the traffic type if not specified as 'peak'."
+            method: POST
+            request:
+                $ref: '#/types/reg_and_peak_traffic_criteria'
+
+            response:
+                $ref: '#/types/reg_and_peak_response_data'
+
+  qos:
+    description: "Depicts the outbound/inbound qos timeseries"
+
+    type: object
+    additionalProperties: False
+
+    links:
+        self:
+            path: "$/qos"
+
+        report:
+            description: "This is a report that returns the outbound/inbound QoS time-series report for a given device. It returns outbound qos data if the traffic type if not specified."
+            method: POST
+            request:
+                $ref: '#/types/qos_criteria'
+
+            response:
+                type: object
+                description: '''
+                             This object holds the outbound/inbound QoS data
+                             for a specified device. If no traffic type is
+                             specified, it defaults to outbound QoS data.
+                             If no qos_class_id is specified, it defaults to qos_class_id 3.
+                             '''
+                properties:
+                    query_criteria: {$ref: '#/types/qos_criteria'}
+                    granularity: {$ref: '#/types/granularity'}
+                    response_data:
+                        type: array
+                        description: "Each element in this array is a {timestamp, qos_data} tuple containing the timestamp and the QoS data at that time"
+
+                        items:
+                            type: object
+                            properties:
+                                timestamp:
+                                    type: timestamp
+                                    description: "The epoch timestamp of this datapoint"
+                                data:
+                                    type: array
+                                    description: '''
+                                                 The [packets_sent, packets_dropped, bits_sent, bits_dropped] 4-tuple for each datapoint for outbound/inbound qos data.
+                                                 '''
+                                    items:
+                                        type: number
+
+  granite_lun_io:
+    description: "Depicts the granite lun io timeseries"
+
+    type: object
+    additionalProperties: False
+
+    links:
+        self:
+            path: "$/granite/lun_io"
+
+        report:
+            description: "This is a report that returns the granite lun io timeseries report for a given device."
+            method: POST
+            request:
+                $ref: '#/types/lun_io_criteria'
+
+            response:
+                type: object
+                description: '''
+                             This object holds the io/iops/io_time LUN IO data
+                             for a specified device. If no traffic type is
+                             specified, it defaults to io operations performed (IO) LUN IO data.
+                             If no lun_subclass_id is specified, it defaults to lun_subclass_id 0.
+                             '''
+                properties:
+                    query_criteria: {$ref: '#/types/lun_io_criteria'}
+                    granularity: {$ref: '#/types/granularity'}
+                    response_data:
+                        type: array
+                        description: "Each element in this array is a {timestamp, lun_io_data} tuple containing the timestamp and LUN IO data at that time"
+
+                        items:
+                            type: object
+                            properties:
+                                timestamp:
+                                    type: timestamp
+                                    description: "The epoch timestamp of this data point"
+                                data:
+                                    type: array
+                                    description: '''
+                                                 The [num_of_reads, num_of_writes] 2-tuple for each data point for io/iops/io_time lun io data.
+                                                 '''
+                                    items:
+                                        type: number
+
+
+  granite_initiator_io:
+    description: "Depicts the SteelFusion initiator io time-series"
+
+    type: object
+    additionalProperties: False
+
+    links:
+        self:
+            path: "$/granite/initiator_io"
+
+        report:
+            description: "This is a report that returns the SteelFusion initiator io time-series report for a given device."
+            method: POST
+            request:
+                $ref: '#/types/initiator_io_criteria'
+
+            response:
+                type: object
+                description: '''
+                             This object holds the io/iops/io_time initiator IO data
+                             for a specified device. If no traffic type is
+                             specified, it defaults to IO operations performed (io) initiator IO data.
+                             If no initiator_subclass_id is specified, it defaults to initiator_subclass_id 0.
+                             '''
+                properties:
+                    query_criteria: {$ref: '#/types/initiator_io_criteria'}
+                    granularity: {$ref: '#/types/granularity'}
+                    response_data:
+                        type: array
+                        description: "Each element in this array is a {timestamp, initiator_io_data} tuple containing the timestamp and initiator io data at that time"
+
+                        items:
+                            type: object
+                            properties:
+                                timestamp:
+                                    type: timestamp
+                                    description: "The epoch timestamp of this data point"
+                                data:
+                                    type: array
+                                    description: '''
+                                                 The [num_of_reads, num_of_writes] 2-tuple for each data point for io/iops/io_time initiator IO data.
+                                                 '''
+                                    items:
+                                        type: number
+
+  granite_network_io:
+    description: "Depicts the SteelFusion network IO timeseries"
+
+    type: object
+    additionalProperties: False
+
+    links:
+        self:
+            path: "$/granite/network_io"
+
+        report:
+            description: "This is a report that returns the SteelFusion network IO timeseries report for a given device."
+            method: POST
+            request:
+                $ref: '#/types/network_io_criteria'
+
+            response:
+                type: object
+                description: '''
+                             This object holds the throughput/prefetch network io data
+                             for a specified device. If no traffic type is
+                             specified, it defaults to the throughput network io data.
+                             '''
+                properties:
+                    query_criteria: {$ref: '#/types/network_io_criteria'}
+                    granularity: {$ref: '#/types/granularity'}
+                    response_data:
+                        type: array
+                        description: "Each element in this array is a {timestamp, network_io_data} tuple containing the timestamp and network io data at that time"
+
+                        items:
+                            type: object
+                            properties:
+                                timestamp:
+                                    type: timestamp
+                                    description: "The epoch timestamp of this data point"
+                                data:
+                                    type: array
+                                    description: '''
+                                                 The [num_of_reads, num_of_writes] 2-tuple for each data point for network io throughput data.
+                                                 And the [num_of_bytes_read] 1-tuple for each data point for network io prefetch data.
+                                                 '''
+                                    items:
+                                        type: number
+
+
+  granite_blockstore:
+    description: "Depicts the SteelFusion blockstore timeseries"
+
+    type: object
+    additionalProperties: False
+
+    links:
+        self:
+            path: "$/granite/blockstore"
+
+        report:
+            description: "This is a report that returns the SteelFusion blockstore timeseries report for a given device."
+            method: POST
+            request:
+                $ref: '#/types/blockstore_criteria'
+
+            response:
+                type: object
+                description: '''
+                             This object holds the hit_miss/uncmtd_first_classid/uncmtd_last_classid/commit_throughput/commit_delay blockstore data
+                             for a specified device. If no traffic type is
+                             specified, it defaults to the commit_throughput blockstore data.
+                             If no lun_subclass_id is specified, it defaults to lun_subclass_id 0.
+                             '''
+                properties:
+                    query_criteria: {$ref: '#/types/blockstore_criteria'}
+                    granularity: {$ref: '#/types/granularity'}
+                    response_data:
+                        type: array
+                        description: "Each element in this array is a {timestamp, blockstore_data} tuple containing the timestamp and blockstore data at that time"
+
+                        items:
+                            type: object
+                            properties:
+                                timestamp:
+                                    type: timestamp
+                                    description: "The epoch timestamp of this datapoint"
+                                data:
+                                    type: array
+                                    description: '''
+                                                 The [num_of_hits, num_of_misses] 2-tuple for each datapoint for blockstore read hit_miss data.
+                                                 And the [num_of_writes, num_of_commits] 2-tuple for each data point for blockstore uncmtd_first_classid data.
+                                                 And the [num_of_writes, num_of_commits] 2-tuple for each data point for blockstore uncmtd_last_classid data.
+                                                 And the [num_of_writes, num_of_commits] 2-tuple for each data point for blockstore commit throughput data.
+                                                 And the [sec_of_delay] 1-tuple for each data point for blockstore commit delay data.
+                                                 '''
+                                    items:
+                                        type: number
+
+
+  dns_usage:
+    description: "Depicts the dns usage timeseries"
+
+    type: object
+    additionalProperties: False
+
+    links:
+        self:
+            path: "$/dns/usage"
+
+        report:
+            description: "This is a report that returns the DNS usage time-series report for a given list of devices. It returns the aggregate for all the devices if none are specified."
+            method: POST
+            request:
+                $ref: '#/types/multiple_devices_criteria'
+
+            response:
+                $ref: '#/types/multiple_devices_response_data'
+
+
+  dns_cache_hits:
+    description: "Depicts the dns cache hits time-series"
+
+    type: object
+    additionalProperties: False
+
+    links:
+        self:
+            path: "$/dns/cache_hits"
+
+        report:
+            description: "This is a report that returns the DNS cache hits time-series report for a given list of devices. It returns the aggregate for all the devices if none are specified."
+            method: POST
+            request:
+                $ref: '#/types/multiple_devices_criteria'
+
+            response:
+                $ref: '#/types/multiple_devices_response_data'
+
+  bw_per_appliance:
+    description: "Depicts the bandwidth per appliance data"
+
+    type: object
+    additionalProperties: False
+
+    links:
+        self:
+            path: "$/bandwidth/per_appliance"
+
+        report:
+            description: >
+                         This is a report that returns the per appliance
+                         bandwidth report for a given list of devices.
+            method: POST
+            request:
+                $ref: '#/types/per_appl_bw_criteria'
+
+            response:
+                type: object
+                description: >
+                             This object is used to hold the response data of
+                             the per appliance bandwidth query.
+                properties:
+                    query_criteria: {$ref: '#/types/per_appl_bw_criteria'}
+                    response_data:
+                        type: array
+                        description: >
+                                     Each element in the array is the following:
+                                     {device, data_array} tuple containing the
+                                     device and bw data for that device.
+
+                                     The sum of the opt/passthru data comprises
+                                     each of the data arrays:
+                                     [sum_wan_in, sum_wan_out,
+                                      sum_lan_in, sum_lan_out]
+                                          4-tuple for optimized.
+                                     [sum_bytes_in, sum_bytes_out]
+                                          2-tuple for passthrough
+
+                        items:
+                            type: object
+                            properties:
+                                device: {$ref: '#/types/device_id'}
+                                data:
+                                    type: array
+                                    items:
+                                        type: number
+
+  throughput_per_appliance:
+    description: "Depicts the throughput per appliance data"
+
+    type: object
+    additionalProperties: False
+
+    links:
+        self:
+            path: "$/throughput/per_appliance"
+
+        report:
+            description: >
+                         This is a report that returns the throughput per
+                         appliance report for a given list of devices.
+            method: POST
+            request:
+                $ref: '#/types/per_appl_thrput_criteria'
+
+            response:
+                type: object
+                description: >
+                             This object is used to hold the response data of
+                             the per appliance throughput query.
+                properties:
+                    query_criteria: {$ref: '#/types/per_appl_thrput_criteria'}
+                    response_data:
+                        type: array
+                        description: >
+                                     Each element in the array is the following:
+                                     {device, data_array} tuple containing the
+                                     device and throughput data for that device
+
+                                     The max of the peak/p95 data comprises
+                                     each of the data arrays:
+                                     [max_wan_in, max_wan_out,
+                                      max_lan_in, max_lan_out]
+                                          4-tuple for optimized.
+                                     The [max_bytes_in, max_bytes_out]
+                                          2-tuple for passthrough
+
+                        items:
+                            type: object
+                            properties:
+                                device: {$ref: '#/types/device_id'}
+                                data:
+                                    type: array
+                                    items:
+                                        type: number
+
+
+
+  #############################################################################
+  # Debugging Resources
+  #############################################################################
+
+  logging:
+    description: Service logging parameters
+    type: object
+    required: [ level ]
+    properties:
+        level: { $ref: '#/types/logging_level' }
+
+    links:
+        self: { path: "$/logging" }
+
+        get:
+            method: GET
+            response: { $ref: '#/resources/logging' }
+
+        set:
+            method: PUT
+            request: { $ref: '#/resources/logging' }
+            response: { $ref: '#/resources/logging' }
