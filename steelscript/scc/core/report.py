@@ -32,10 +32,10 @@ __all__ = ['BWUsageStatsReport',
            'TCPMemoryPressureReport',
            'QoSStatsReport',
            'SnapMirrorStatsReport',
-           'GraniteLUNIOReport',
-           'GraniteInitiatorIOReport',
-           'GraniteNetworkIOReport',
-           'GraniteBlockstoreReport']
+           'SteelFusionLUNIOReport',
+           'SteelFusionInitiatorIOReport',
+           'SteelFusionNetworkIOReport',
+           'SteelFusionBlockstoreReport']
 
 logger = logging.getLogger(__name__)
 
@@ -54,7 +54,7 @@ class Report(object):
 
     def __exit__(self, type, value, traceback):
         if any([type, value, traceback]):
-            logger.exception("Exception in running %s" % self.__class__.__name)
+            logger.exception("Exception in running %s" % self.__class__.__name__)
 
 
 class BaseStatsReport(Report):
@@ -108,7 +108,7 @@ class BaseStatsReport(Report):
         for field in self.required_fields:
             if field not in kwargs:
                 raise SCCException('Field %s is required to run %s' %
-                                   (field, self.__class__))
+                                   (field, self.__class__.__name__))
             self.criteria[field] = kwargs[field]
 
         # Adding non-required fields to criteria
@@ -295,25 +295,25 @@ class SnapMirrorStatsReport(BaseStatsReport):
 #
 
 
-class GraniteLUNIOReport(BaseStatsReport):
-    """Report class to return the granite lun io timeseries"""
+class SteelFusionLUNIOReport(BaseStatsReport):
+    """Report class to return the SteelFusion lun io timeseries"""
     required_fields = ['device']
     non_required_fields = ['traffic_type', 'lun_subclass_id']
     resource = 'granite_lun_io'
 
 
-class GraniteInitiatorIOReport(BaseStatsReport):
-    """Report class to return the SteelFusion initiator io time-sereis"""
+class SteelFusionInitiatorIOReport(BaseStatsReport):
+    """Report class to return the SteelFusion initiator io timeseries"""
     required_fields = ['device']
     non_required_fields = ['traffic_type', 'initiator_subclass_id']
     resource = 'granite_initiator_io'
 
 
-class GraniteNetworkIOReport(TimeseriesStatsReport):
+class SteelFusionNetworkIOReport(TimeseriesStatsReport):
     """Report class to return the SteelFusion network IO timeseries"""
     resource = 'granite_network_io'
 
 
-class GraniteBlockstoreReport(GraniteLUNIOReport):
+class SteelFusionBlockstoreReport(SteelFusionLUNIOReport):
     """Report class to return the SteelFusion blockstore timeseries"""
     resource = 'granite_blockstore'
