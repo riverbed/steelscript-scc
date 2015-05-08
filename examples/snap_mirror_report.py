@@ -5,7 +5,7 @@
 # as set forth in the License.
 
 from steelscript.scc.core.app import SCCApp
-from steelscript.scc.core.report import *
+from steelscript.scc.core import report as report_module
 
 import pprint
 
@@ -42,7 +42,7 @@ class SnapMirrorStatsReportApp(SCCApp):
                               self.options.filer_id)
 
     def main(self):
-        with SnapMirrorStatsReport(self.scc) as report:
+        with report_module.SnapMirrorStatsReport(self.scc) as report:
             filer_id = (int(self.options.filer_id)
                         if self.options.filer_id else None)
 

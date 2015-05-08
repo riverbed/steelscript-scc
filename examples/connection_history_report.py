@@ -5,7 +5,7 @@
 # as set forth in the License.
 
 from steelscript.scc.core.app import SCCApp
-from steelscript.scc.core.report import *
+from steelscript.scc.core import report as report_module
 
 import pprint
 
@@ -35,7 +35,7 @@ class ConnectionHistoryStatsReportApp(SCCApp):
             self.parser.error("Device (serial ID) is required")
 
     def main(self):
-        with ConnectionHistoryStatsReport(self.scc) as report:
+        with report_module.ConnectionHistoryStatsReport(self.scc) as report:
             report.run(timefilter=self.options.timefilter,
                        traffic_type=self.options.traffic_type,
                        device=self.options.device)

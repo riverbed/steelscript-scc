@@ -5,7 +5,7 @@
 # as set forth in the License.
 
 from steelscript.scc.core.app import SCCApp
-from steelscript.scc.core.report import *
+from steelscript.scc.core import report as report_module
 
 import pprint
 
@@ -44,7 +44,7 @@ class LUNIOStatsReportApp(SCCApp):
                               self.options.lun_subclass_id)
 
     def main(self):
-        with SteelFusionLUNIOReport(self.scc) as report:
+        with report_module.SteelFusionLUNIOReport(self.scc) as report:
             lun_subclass_id = (int(self.options.lun_subclass_id)
                                if self.options.lun_subclass_id else None)
 

@@ -5,7 +5,7 @@
 # as set forth in the License.
 
 from steelscript.scc.core.app import SCCApp
-from steelscript.scc.core.report import *
+from steelscript.scc.core import report as report_module
 
 import pprint
 
@@ -31,25 +31,25 @@ class SingleDevStatsReportApp(SCCApp):
             self.parser.error("Device (serial ID) is required")
 
     def main(self):
-        with SDRAdaptiveStatsReport(self.scc) as report:
+        with report_module.SDRAdaptiveStatsReport(self.scc) as report:
             report.run(timefilter=self.options.timefilter,
                        device=self.options.device)
             pprint.pprint(report.data)
             print('')
 
-        with MemoryPagingStatsReport(self.scc) as report:
+        with report_module.MemoryPagingStatsReport(self.scc) as report:
             report.run(timefilter=self.options.timefilter,
                        device=self.options.device)
             pprint.pprint(report.data)
             print('')
 
-        with CpuUtilizationStatsReport(self.scc) as report:
+        with report_module.CpuUtilizationStatsReport(self.scc) as report:
             report.run(timefilter=self.options.timefilter,
                        device=self.options.device)
             pprint.pprint(report.data)
             print('')
 
-        with PFSStatsReport(self.scc) as report:
+        with report_module.PFSStatsReport(self.scc) as report:
             report.run(timefilter=self.options.timefilter,
                        device=self.options.device)
             pprint.pprint(report.data)

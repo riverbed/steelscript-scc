@@ -5,7 +5,7 @@
 # as set forth in the License.
 
 from steelscript.scc.core.app import SCCApp
-from steelscript.scc.core.report import *
+from steelscript.scc.core import report as report_module
 
 import pprint
 
@@ -28,49 +28,49 @@ class MultiDevStatsReportApp(SCCApp):
             'are the sum across all the devices.')
 
     def main(self):
-        with ConnectionPoolingStatsReport(self.scc) as report:
+        with report_module.ConnectionPoolingStatsReport(self.scc) as report:
             report.run(timefilter=self.options.timefilter,
                        devices=self.options.devices)
             pprint.pprint(report.data)
             print('')
 
-        with ConnectionForwardingStatsReport(self.scc) as report:
+        with report_module.ConnectionForwardingStatsReport(self.scc) as report:
             report.run(timefilter=self.options.timefilter,
                        devices=self.options.devices)
             pprint.pprint(report.data)
             print('')
 
-        with DNSUsageStatsReport(self.scc) as report:
+        with report_module.DNSUsageStatsReport(self.scc) as report:
             report.run(timefilter=self.options.timefilter,
                        devices=self.options.devices)
             pprint.pprint(report.data)
             print('')
 
-        with DNSCacheHitsStatsReport(self.scc) as report:
+        with report_module.DNSCacheHitsStatsReport(self.scc) as report:
             report.run(timefilter=self.options.timefilter,
                        devices=self.options.devices)
             pprint.pprint(report.data)
             print('')
 
-        with HTTPStatsReport(self.scc) as report:
+        with report_module.HTTPStatsReport(self.scc) as report:
             report.run(timefilter=self.options.timefilter,
                        devices=self.options.devices)
             pprint.pprint(report.data)
             print('')
 
-        with NFSStatsReport(self.scc) as report:
+        with report_module.NFSStatsReport(self.scc) as report:
             report.run(timefilter=self.options.timefilter,
                        devices=self.options.devices)
             pprint.pprint(report.data)
             print('')
 
-        with SSLStatsReport(self.scc) as report:
+        with report_module.SSLStatsReport(self.scc) as report:
             report.run(timefilter=self.options.timefilter,
                        devices=self.options.devices)
             pprint.pprint(report.data)
             print('')
 
-        with DiskLoadStatsReport(self.scc) as report:
+        with report_module.DiskLoadStatsReport(self.scc) as report:
             report.run(timefilter=self.options.timefilter,
                        devices=self.options.devices)
             pprint.pprint(report.data)

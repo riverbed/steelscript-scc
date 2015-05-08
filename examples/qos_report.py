@@ -5,7 +5,7 @@
 # as set forth in the License.
 
 from steelscript.scc.core.app import SCCApp
-from steelscript.scc.core.report import *
+from steelscript.scc.core import report as report_module
 
 import pprint
 
@@ -43,7 +43,7 @@ class QoSStatsReportApp(SCCApp):
                               self.options.qos_class_id)
 
     def main(self):
-        with QoSStatsReport(self.scc) as report:
+        with report_module.QoSStatsReport(self.scc) as report:
             qos_class_id = (int(self.options.qos_class_id)
                             if self.options.qos_class_id else None)
 

@@ -5,7 +5,7 @@
 # as set forth in the License.
 
 from steelscript.scc.core.app import SCCApp
-from steelscript.scc.core.report import *
+from steelscript.scc.core import report as report_module
 
 import pprint
 
@@ -44,7 +44,7 @@ class InitiatorIOStatsReportApp(SCCApp):
                               self.options.initiator_subclass_id)
 
     def main(self):
-        with SteelFusionInitiatorIOReport(self.scc) as report:
+        with report_module.SteelFusionInitiatorIOReport(self.scc) as report:
             initiator_id = self.options.initiator_subclass_id
             initiator_subclass_id = (int(initiator_id)
                                      if initiator_id else None)
