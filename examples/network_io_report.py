@@ -10,10 +10,10 @@ from steelscript.scc.core.report import *
 import pprint
 
 
-class GraniteNetworkIOReportApp(SCCApp):
+class SteelFusionNetworkIOReportApp(SCCApp):
 
     def add_options(self, parser):
-        super(GraniteNetworkIOReportApp, self).add_options(parser)
+        super(SteelFusionNetworkIOReportApp, self).add_options(parser)
 
         parser.add_option(
             '--timefilter', dest='timefilter', default='last 1 hour',
@@ -29,17 +29,17 @@ class GraniteNetworkIOReportApp(SCCApp):
                           help='Device ID')
 
     def validate_args(self):
-        super(GraniteNetworkIOReportApp, self).validate_args()
+        super(SteelFusionNetworkIOReportApp, self).validate_args()
 
         if not self.options.device:
             self.parser.error("Device (serial ID) is required")
 
     def main(self):
-        with GraniteNetworkIOReport(self.scc) as report:
+        with SteelFusionNetworkIOReport(self.scc) as report:
             report.run(timefilter=self.options.timefilter,
                        traffic_type=self.options.traffic_type,
                        device=self.options.device)
             pprint.pprint(report.data)
 
 if __name__ == '__main__':
-    GraniteNetworkIOReportApp().run()
+    SteelFusionNetworkIOReportApp().run()

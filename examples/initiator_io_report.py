@@ -44,7 +44,7 @@ class InitiatorIOStatsReportApp(SCCApp):
                               self.options.initiator_subclass_id)
 
     def main(self):
-        with GraniteInitiatorIOReport(self.scc) as report:
+        with SteelFusionInitiatorIOReport(self.scc) as report:
             initiator_id = self.options.initiator_subclass_id
             initiator_subclass_id = (int(initiator_id)
                                      if initiator_id else None)

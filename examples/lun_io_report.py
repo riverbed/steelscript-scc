@@ -44,7 +44,7 @@ class LUNIOStatsReportApp(SCCApp):
                               self.options.lun_subclass_id)
 
     def main(self):
-        with GraniteLUNIOReport(self.scc) as report:
+        with SteelFusionLUNIOReport(self.scc) as report:
             lun_subclass_id = (int(self.options.lun_subclass_id)
                                if self.options.lun_subclass_id else None)
 
