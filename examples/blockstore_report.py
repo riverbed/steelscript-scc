@@ -44,7 +44,7 @@ class BlockStoreStatsReportApp(SCCApp):
                               self.options.lun_subclass_id)
 
     def main(self):
-        with GraniteBlockstoreReport(self.scc) as report:
+        with SteelFusionBlockstoreReport(self.scc) as report:
             lun_subclass_id = (int(self.options.lun_subclass_id)
                                if self.options.lun_subclass_id else None)
 
