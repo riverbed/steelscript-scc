@@ -5,7 +5,7 @@
 # as set forth in the License.
 
 from steelscript.common.app import Application
-from steelscript.scc.core import SCC
+from steelscript.scc.core import SCCServiceManager, VERSION
 
 
 class SCCApp(Application):
@@ -25,4 +25,6 @@ class SCCApp(Application):
 
     def setup(self):
         super(SCCApp, self).setup()
-        self.scc = SCC(self.options.host)._svc
+        svc_manager = SCCServiceManager.create()
+        self.scc = svc_manager.find_by_name(
+            self.options.host, name='stats', version=VERSION)
