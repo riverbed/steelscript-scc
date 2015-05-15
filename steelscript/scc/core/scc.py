@@ -7,14 +7,15 @@
 import os
 
 from sleepwalker.service import ServiceManager
-from sleepwalker.connection import Connection, ConnectionManager
+from sleepwalker.connection import ConnectionManager, ConnectionHook
 
 import reschema.servicedef as ServiceDef
+import steelscript.common.service
 
 
-SERVICE_ID = 'https://support.riverbed.com/apis/cmc.{0}/{1}'
+SERVICE_ID = 'https://support.riverbed.com/apis/{0}/{1}'
 
-SERVICE_NAMES = ['appliance_inventory', 'stats']
+SERVICE_NAMES = ['cmc.appliance_inventory', 'cmc.stats']
 
 VERSION = '1.0'
 
@@ -68,12 +69,10 @@ class ServiceDefLoader(ServiceDef.ServiceDefLoadHook):
         return self.find_by_id(service_id)
 
 
-class SCCConnectionHook(object):
-    def connect(self, host, auth=None):
-        return Connection(host)
-
-
 class SCCServiceManager(ServiceManager):
+    """This class encapsulates the storage of SCC services
+    and connection with the SCC device.
+    """
     _instance = None
 
     @classmethod
@@ -91,9 +90,36 @@ class SCCServiceManager(ServiceManager):
 
             # Obtain connection manager
             conn_manager = ConnectionManager()
-            conn_manager.add_conn_hook(SCCConnectionHook())
+            conn_manager.add_conn_hook(ConnectionHook())
 
             # Initialize the instance of service manager
             cls._instance = ServiceManager(servicedef_manager=svcdef_manager,
                                            connection_manager=conn_manager)
         return cls._instance
+
+
+class SCC(steelscript.common.service.Service):
+    """This class is the main interface to interact with a SteelCentral
+    Controller.
+    """
+    def __init__(self, host, port=None, auth=None):
+        super(SCC, self).__init__("scc", host=host)
+        self._svcmgr = SCCServiceManager.create()
+
+    def request(self, service, resource, link, criteria=None):
+        """Send request to the scc device and expects a response
+        immediately.
+
+        :param service: string, name of the service, e.g. cmc.stats
+        :param resource: string, name of the resource to query
+        :param link: string, name of the link method to query
+        :param criteria: dict, criteria fields to query
+        """
+        svc = self._svcmgr.find_by_name(host=self.host, name=service,
+                                        version=VERSION)
+        data_rep = svc.bind(resource)
+        resp = data_rep.execute(link, criteria)
+        try:
+            return resp.data['response_data']
+        except:
+            return resp.data

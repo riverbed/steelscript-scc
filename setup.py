@@ -22,6 +22,7 @@ except ImportError:
 
 from gitpy_versioning import get_version
 
+
 class PyTest(TestCommand):
     def finalize_options(self):
         TestCommand.finalize_options(self)
@@ -49,11 +50,11 @@ setup(
     long_description="""SteelScript for SteelCentral Controller
 ===================================
 
-SteelScript is a collection of libraries and scripts in Python and JavaScript for
-interacting with Riverbed Technology devices.
+SteelScript is a collection of libraries and scripts in Python and
+JavaScript for interacting with Riverbed Technology devices.
 
 This package contains python modules for interacting with a SteelCentral
-Controller Device. 
+Controller Device.
 
 For a complete guide to installation, see:
 
@@ -89,4 +90,6 @@ http://pythonhosted.org/steelscript/
                     },
     tests_require=test,
     cmdclass={'test': PyTest},
+    entry_points={
+        'portal.plugins': ['SCC = steelscript.scc.appfwk.plugin:SCCPlugin']}
 )
