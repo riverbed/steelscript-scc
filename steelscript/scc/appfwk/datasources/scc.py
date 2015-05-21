@@ -23,11 +23,14 @@ from steelscript.appfwk.apps.datasource.models import TableField
 logger = logging.getLogger(__name__)
 
 
-class SCCTable(DatasourceTable):
+class BaseSCCTable(DatasourceTable):
+    """Base class for SCC report tables, can not be directly used
+    in report definitions.
+    """
     class Meta:
         proxy = True
 
-    _query_class = 'SCCQuery'
+    _query_class = 'BaseSCCQuery'
 
     def post_process_table(self, field_options):
         fields_add_device_selection(self, keyword='scc_device',
@@ -35,11 +38,14 @@ class SCCTable(DatasourceTable):
                                     enabled=True)
 
 
-class SCCStatsTable(SCCTable):
+class BaseSCCStatsTable(BaseSCCTable):
+    """Base class for SCC stats service report tables, can not be directly
+    used in report definitions.
+    """ 
     class Meta:
         proxy = True
 
-    _query_class = 'SCCStatsQuery'
+    _query_class = 'BaseSCCStatsQuery'
 
     # default field parameters
     FIELD_OPTIONS = {'duration': 60,
@@ -60,7 +66,7 @@ class SCCStatsTable(SCCTable):
                                   durations=field_options['durations'])
 
 
-class SCCThroughputTable(SCCStatsTable):
+class SCCThroughputTable(BaseSCCStatsTable):
     """This class defines the table fields and query class for the throughput
     resource underneath cmc.stats service.
     """
@@ -90,14 +96,16 @@ class SCCThroughputTable(SCCStatsTable):
         self.fields.add(field)
 
 
-class SCCApplInvtTable(SCCTable):
+class BaseSCCApplInvtTable(BaseSCCTable):
+    """Base class for SCC appliance_interval service report tables, can not be
+    directly used in reports"""
     class Meta:
         proxy = True
 
-    _query_class = 'SCCApplInvtQuery'
+    _query_class = 'BaseSCCApplInvtQuery'
 
 
-class SCCAppliancesTable(SCCApplInvtTable):
+class SCCAppliancesTable(BaseSCCApplInvtTable):
     """This class defines table and the query class for the appliances
     resource underneath cmc.appliance_inventory service.
     """
@@ -107,7 +115,8 @@ class SCCAppliancesTable(SCCApplInvtTable):
     _query_class = 'SCCAppliancesQuery'
 
 
-class SCCQuery(TableQueryBase):
+class BaseSCCQuery(TableQueryBase):
+    """Base class for SCC device query, can not be directly used"""
     criteria = None
 
     def fill_criteria(self, criteria):
@@ -151,7 +160,7 @@ class SCCQuery(TableQueryBase):
         return True
 
 
-class SCCStatsQuery(SCCQuery):
+class BaseSCCStatsQuery(BaseSCCQuery):
     """Base class for query of cmc.stats service.
 
     :param service: string, the name of service
@@ -193,7 +202,7 @@ class SCCStatsQuery(SCCQuery):
                          'end_time': datetime_to_seconds(criteria.endtime)}
 
 
-class SCCThroughputQuery(SCCStatsQuery):
+class SCCThroughputQuery(BaseSCCStatsQuery):
     """This class run the query to get the throughput data of a SCC device"""
     resource = 'throughput'
     val_cols = ['wan_in', 'wan_out', 'lan_in', 'lan_out']
@@ -205,11 +214,12 @@ class SCCThroughputQuery(SCCStatsQuery):
         self.criteria['device'] = criteria.device_id
 
 
-class SCCApplInvtQuery(SCCQuery):
+class BaseSCCApplInvtQuery(BaseSCCQuery):
+    """Base class for SCC appliance_inventory service query"""
     service = 'cmc.appliance_inventory'
     link = 'get'
 
 
-class SCCAppliancesQuery(SCCApplInvtQuery):
+class SCCAppliancesQuery(BaseSCCApplInvtQuery):
     """This class run the query to get the appliances data of a SCC device"""
     resource = 'appliances'
