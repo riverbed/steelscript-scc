@@ -41,7 +41,7 @@ class BaseSCCTable(DatasourceTable):
 class BaseSCCStatsTable(BaseSCCTable):
     """Base class for SCC stats service report tables, can not be directly
     used in report definitions.
-    """ 
+    """
     class Meta:
         proxy = True
 
@@ -55,7 +55,7 @@ class BaseSCCStatsTable(BaseSCCTable):
                      }
 
     def post_process_table(self, field_options):
-        super(SCCStatsTable, self).post_process_table(field_options)
+        super(BaseSCCStatsTable, self).post_process_table(field_options)
 
         duration = field_options['duration']
         if isinstance(duration, int):
