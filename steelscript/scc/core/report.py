@@ -54,7 +54,8 @@ class Report(object):
 
     def __exit__(self, type, value, traceback):
         if any([type, value, traceback]):
-            logger.exception("Exception in running %s" % self.__class__.__name__)
+            logger.exception("Exception in running %s" %
+                             self.__class__.__name__)
 
 
 class BaseStatsReport(Report):
@@ -118,9 +119,8 @@ class BaseStatsReport(Report):
 
     def run(self, **kwargs):
         self.fill_criteria(**kwargs)
-        data_rep = self.scc.bind(self.resource)
-        resp = data_rep.execute('report', self.criteria)
-        self.data = resp.data['response_data']
+        self.data = self.scc.request('cmc.stats', self.resource,
+                                     'report', self.criteria)
 
 #
 # Bandwidth Reports

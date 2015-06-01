@@ -10,7 +10,6 @@ from sleepwalker.service import ServiceManager
 from sleepwalker.connection import ConnectionManager, ConnectionHook
 
 import reschema.servicedef as ServiceDef
-import steelscript.common.service
 
 
 SERVICE_ID = 'https://support.riverbed.com/apis/{0}/{1}'
@@ -98,12 +97,12 @@ class SCCServiceManager(ServiceManager):
         return cls._instance
 
 
-class SCC(steelscript.common.service.Service):
+class SCC(object):
     """This class is the main interface to interact with a SteelCentral
     Controller.
     """
     def __init__(self, host, port=None, auth=None):
-        super(SCC, self).__init__("scc", host=host)
+        self.host = host
         self._svcmgr = SCCServiceManager.create()
 
     def request(self, service, resource, link, criteria=None):
