@@ -12,11 +12,6 @@ manager, service manager and requesting data from the Restful server.
 
 import importlib
 
-from steelscript.scc.core.rest.auth import RvbdOAuth2
-from steelscript.common.service import OAuth
-from steelscript.common.service import Service
-from steelscript.common.datastructures import Singleton
-
 
 class SleepWalkerServerBase(object):
     """Base class for interacting with a REST server. Should only be

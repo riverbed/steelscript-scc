@@ -18,10 +18,13 @@ class SCCApp(Application):
         super(SCCApp, self).parse_args()
 
     def add_positional_args(self):
-        self.add_positional_arg('host', 
-            'SCC hostname or IP address (including scheme, i.e. http:// or https://)')
+        self.add_positional_arg(
+            'host',
+            'SCC hostname or IP address '
+            '(including scheme, i.e. http:// or https://)')
 
-        self.add_positional_arg('access_code',
+        self.add_positional_arg(
+            'access_code',
             'access code, manually obtained via web UI of the SCC')
 
     def add_options(self, parser):
