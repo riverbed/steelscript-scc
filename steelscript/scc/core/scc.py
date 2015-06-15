@@ -114,4 +114,4 @@ class SCC(SleepWalkerServerBase):
     """
     _svcmgr_cls_module = 'steelscript.scc.core.scc'
     _svcmgr_cls_name = 'SCCServiceManager'
-    version = '1.0'
+    version = VERSION
