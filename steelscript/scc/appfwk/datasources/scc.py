@@ -18,6 +18,7 @@ from steelscript.appfwk.apps.devices.forms import fields_add_device_selection
 from steelscript.appfwk.apps.datasource.forms import fields_add_time_selection
 from steelscript.common.timeutils import datetime_to_seconds
 from steelscript.appfwk.apps.datasource.models import TableField
+from steelscript.scc.core.scc import SCCException
 
 
 logger = logging.getLogger(__name__)
@@ -143,6 +144,8 @@ class BaseSCCQuery(TableQueryBase):
                            resource=self.resource,
                            link=self.link,
                            criteria=self.criteria)
+        if not data:
+            raise SCCException("No data returned")
         # Convert to a DataFrame to make it easier to work with
         df = pandas.DataFrame(self.df_ready(data))
 

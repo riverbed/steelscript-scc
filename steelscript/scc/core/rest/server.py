@@ -7,12 +7,15 @@
 """
 This module defines abstraction of classes and methods dealing with
 a RESTful server, including instantiating connection manager, service_def
-manager, service manager and requesting data from the Restful server. 
+manager, service manager and requesting data from the Restful server.
 """
 
 import importlib
 
 from steelscript.scc.core.rest.auth import RvbdOAuth2
+from steelscript.common.service import OAuth
+from steelscript.common.service import Service
+from steelscript.common.datastructures import Singleton
 
 
 class SleepWalkerServerBase(object):
@@ -21,14 +24,14 @@ class SleepWalkerServerBase(object):
     data from the REST server.
     """
 
-    def __init__(self, host, access_code):
+    def __init__(self, host, auth):
         self.host = host
-        self.auth = RvbdOAuth2(access_code)
+        self.auth = auth
 
         mod = importlib.import_module(self._svcmgr_cls_module)
 
         _svcmgr_cls = mod.__dict__[self._svcmgr_cls_name]
-        self._svcmgr = _svcmgr_cls.create()
+        self._svcmgr = _svcmgr_cls()
 
     def request(self, service, resource, link, criteria=None):
         """Send request to the REST Server and expects a response

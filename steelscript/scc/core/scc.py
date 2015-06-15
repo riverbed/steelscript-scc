@@ -5,17 +5,17 @@
 # as set forth in the License.
 
 import os
+import logging
 
 from sleepwalker.service import ServiceManager
 from sleepwalker.connection import ConnectionManager
-from steelscript.scc.core.rest.connection import UnVerifiedSSLConnectionHook
+from steelscript.scc.core.rest.connection import ServerConnectionHook
 from steelscript.scc.core.rest.server import SleepWalkerServerBase
-#from steelscript.scc.core.rest.loaders import ServiceDefLoader
+from steelscript.common.datastructures import Singleton
+
 import reschema.servicedef as ServiceDef
 
-
-
-
+logger = logging.getLogger(__name__)
 
 SERVICE_NAMES = ['cmc.appliance_inventory', 'cmc.stats']
 
@@ -29,6 +29,10 @@ def get_filename(service):
     service_file = os.path.join(current_dir,
                                 'servicedef/{0}.yml'.format(service))
     return service_file
+
+
+class SCCException(Exception):
+    pass
 
 
 class ServiceDefLoader(ServiceDef.ServiceDefLoadHook):
@@ -73,34 +77,35 @@ class ServiceDefLoader(ServiceDef.ServiceDefLoadHook):
         return self.find_by_id(service_id)
 
 
+class SCCServerConnectionHook(ServerConnectionHook):
+    _service = 'scc'
+
 
 class SCCServiceManager(ServiceManager):
     """This class encapsulates the storage of SCC services
     and connection with the SCC device.
     """
-    _instance = None
+    __metaclass__ = Singleton
 
-    @classmethod
-    def create(cls):
-        if cls._instance is None:
-            # Construct service loader
-            svcdef_loader = ServiceDefLoader()
-            for svc in SERVICE_NAMES:
-                ServiceDefLoader.register_servicedef(
-                    SERVICE_ID.format(svc, VERSION),  get_filename(svc))
+    def __new__(cls):
+        # Construct service loader
+        svcdef_loader = ServiceDefLoader()
+        for svc in SERVICE_NAMES:
+            ServiceDefLoader.register_servicedef(
+                SERVICE_ID.format(svc, VERSION),  get_filename(svc))
 
-            # Derive service def manager
-            svcdef_manager = ServiceDef.ServiceDefManager()
-            svcdef_manager.add_load_hook(svcdef_loader)
+        # Derive service def manager
+        svcdef_manager = ServiceDef.ServiceDefManager()
+        svcdef_manager.add_load_hook(svcdef_loader)
 
-            # Obtain connection manager
-            conn_manager = ConnectionManager()
-            conn_manager.add_conn_hook(UnVerifiedSSLConnectionHook())
+        # Obtain connection manager
+        conn_manager = ConnectionManager()
+        conn_manager.add_conn_hook(SCCServerConnectionHook())
 
-            # Initialize the instance of service manager
-            cls._instance = ServiceManager(servicedef_manager=svcdef_manager,
-                                           connection_manager=conn_manager)
-        return cls._instance
+        # Initialize the instance of service manager
+        logger.info("Initializing service manager")
+        return ServiceManager(servicedef_manager=svcdef_manager,
+                              connection_manager=conn_manager)
 
 
 class SCC(SleepWalkerServerBase):

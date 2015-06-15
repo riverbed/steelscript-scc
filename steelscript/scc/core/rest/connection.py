@@ -4,25 +4,21 @@
 # accompanying the software ("License").  This software is distributed "AS IS"
 # as set forth in the License.
 
-
-""" 
+"""
 Provides sleepwalker ConnectionManager that doesn't verify SSL for
 appliances with self signed certificates.
 
 """
 
-from __future__ import (unicode_literals, print_function, division,
-                        absolute_import)
+from steelscript.common.service import Service
 
 import sleepwalker
 
 
-class UnVerifiedSSLConnectionHook(sleepwalker.connection.ConnectionHook):
-    """ Connection hook for creating unverified SSL connections
-    Always turn off verify because the SSL certs don't verify by default.
-    """
+class ServerConnectionHook(sleepwalker.connection.ConnectionHook):
+
+    _service = None
 
     def connect(self, host, auth):
-        connection = sleepwalker.Connection(host, auth=auth)
-        connection.conn.verify = False
-        return connection
+        svc = Service(self._service, host=host, auth=auth)
+        return svc.conn
