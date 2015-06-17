@@ -48,6 +48,9 @@ class Report(object):
     """Base class for SCC reports"""
     def __init__(self, scc):
         self.scc = scc
+        self.datarep = None
+        self.response = None
+        self.data = None
 
     def __enter__(self):
         return self
@@ -119,8 +122,9 @@ class BaseStatsReport(Report):
 
     def run(self, **kwargs):
         self.fill_criteria(**kwargs)
-        self.data = self.scc.request('cmc.stats', self.resource,
-                                     'report', self.criteria)
+        self.datarep = self.scc.stats.bind(self.resource)
+        self.response = self.datarep.execute('report', self.criteria)
+        self.data = self.response.data['response_data']
 
 #
 # Bandwidth Reports

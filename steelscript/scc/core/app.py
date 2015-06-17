@@ -6,6 +6,7 @@
 
 from steelscript.common.app import Application
 from steelscript.scc.core import SCC
+from steelscript.common.service import OAuth
 
 
 class SCCApp(Application):
@@ -32,4 +33,4 @@ class SCCApp(Application):
 
     def setup(self):
         super(SCCApp, self).setup()
-        self.scc = SCC(self.options.host, self.options.access_code)
+        self.scc = SCC(self.options.host, OAuth(self.options.access_code))
