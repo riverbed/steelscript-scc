@@ -140,10 +140,15 @@ class BaseSCCQuery(TableQueryBase):
         columns = [col.name for col in self.table.get_columns(synthetic=False)]
 
         scc = DeviceManager.get_device(criteria.scc_device)
-        data = scc.request(service=self.service,
-                           resource=self.resource,
-                           link=self.link,
-                           criteria=self.criteria)
+
+        datarep = getattr(scc, self.service).bind(self.resource)
+        resp = datarep.execute(self.link, self.criteria)
+
+        if 'response_data' in resp.data:
+            data = resp.data['response_data']
+        else:
+            data = resp.data
+
         if not data:
             raise SCCException("No data returned")
         # Convert to a DataFrame to make it easier to work with
@@ -166,12 +171,12 @@ class BaseSCCQuery(TableQueryBase):
 class BaseSCCStatsQuery(BaseSCCQuery):
     """Base class for query of cmc.stats service.
 
-    :param service: string, the name of service
+    :param service: string, the name of service attribute
     :param link: string, link name to get the response
     :param val_cols: list of name of non-key columns
     :param key_col: string, name of key column
     """
-    service = 'cmc.stats'
+    service = 'stats'
     link = 'report'
     val_cols = []
     key_col = None
@@ -219,7 +224,7 @@ class SCCThroughputQuery(BaseSCCStatsQuery):
 
 class BaseSCCApplInvtQuery(BaseSCCQuery):
     """Base class for SCC appliance_inventory service query"""
-    service = 'cmc.appliance_inventory'
+    service = 'appliance'
     link = 'get'
 
 
