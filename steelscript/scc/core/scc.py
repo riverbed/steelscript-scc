@@ -94,7 +94,7 @@ class SCC(object):
     Controller.
     """
 
-    def __init__(self, host, auth):
+    def __init__(self, host, port=None, auth=None):
         svcmgr = SCCServiceManager()
         self.stats = svcmgr.find_by_name(host=host, name='cmc.stats',
                                          version='1.0', auth=auth)
