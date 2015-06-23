@@ -33,4 +33,5 @@ class SCCApp(Application):
 
     def setup(self):
         super(SCCApp, self).setup()
-        self.scc = SCC(self.options.host, OAuth(self.options.access_code))
+        self.scc = SCC(host=self.options.host,
+                       auth=OAuth(self.options.access_code))

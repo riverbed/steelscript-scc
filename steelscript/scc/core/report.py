@@ -81,8 +81,7 @@ class BaseStatsReport(Report):
         super(BaseStatsReport, self).__init__(scc)
         self.criteria = {}
 
-    def fill_criteria(self, **kwargs):
-
+    def _fill_criteria(self, **kwargs):
         # Ensure all passed-in params are valid params
         valid_fields = (['timefilter'] + self.required_fields +
                         self.non_required_fields)
@@ -121,7 +120,8 @@ class BaseStatsReport(Report):
                 self.criteria[field] = kwargs[field]
 
     def run(self, **kwargs):
-        self.fill_criteria(**kwargs)
+        """Run report to fetch data from the SCC device"""
+        self._fill_criteria(**kwargs)
         self.datarep = self.scc.stats.bind(self.resource)
         self.response = self.datarep.execute('report', self.criteria)
         self.data = self.response.data['response_data']

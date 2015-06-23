@@ -61,6 +61,7 @@ class ServiceDefLoader(ServiceDef.ServiceDefLoadHook):
 class SCCServerConnectionHook(sleepwalker.connection.ConnectionHook):
 
     def connect(self, host, auth):
+        """Create a connection to the server"""
         svc = Service("scc", host=host, auth=auth)
         return svc.conn
 
@@ -72,6 +73,7 @@ class SCCServiceManager(ServiceManager):
     __metaclass__ = Singleton
 
     def __new__(cls):
+        """Create a SCCServiceManager instance"""
         # Construct service loader
         svcdef_loader = ServiceDefLoader()
 
@@ -95,6 +97,7 @@ class SCC(object):
     """
 
     def __init__(self, host, port=None, auth=None):
+        """Create an SCC object"""
         svcmgr = SCCServiceManager()
         self.stats = svcmgr.find_by_name(host=host, name='cmc.stats',
                                          version='1.0', auth=auth)
