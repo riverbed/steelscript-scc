@@ -124,7 +124,8 @@ class BaseStatsReport(Report):
         self._fill_criteria(**kwargs)
         self.datarep = self.scc.stats.bind(self.resource)
         self.response = self.datarep.execute(self.link, self.criteria)
-        if self.response_key:
+        if (self.response_key and isinstance(self.response.data, dict) and
+                self.response_key in self.response.data):
             self.data = self.response.data[self.response_key]
         else:
             self.data = self.response.data
