@@ -18,7 +18,6 @@ from steelscript.appfwk.apps.devices.forms import fields_add_device_selection
 from steelscript.appfwk.apps.datasource.forms import fields_add_time_selection
 from steelscript.common.timeutils import datetime_to_seconds
 from steelscript.appfwk.apps.datasource.models import TableField
-from steelscript.scc.core.scc import SCCException
 
 
 logger = logging.getLogger(__name__)
@@ -117,14 +116,75 @@ class SCCAppliancesTable(BaseSCCApplInvtTable):
 
 
 class BaseSCCQuery(TableQueryBase):
-    """Base class for SCC device query, can not be directly used"""
+    """Base class for SCC device query, can not be directly used.
+
+    :param service: string, the name of service attribute
+    :param link: string, link name to get the response
+    :param val_cols: list of name of non-key columns
+    :param key_col: string, name of key column
+    :param response_key: string, key to the response data
+        if response_key is None, the entire resp.data is desired
+
+    """
     criteria = None
+    link = None
+    val_cols = []
+    key_col = None
+    response_key = None
 
     def fill_criteria(self, criteria):
         pass
 
-    def df_ready(self, data):
-        return data
+    def extract_dataframe(self, response):
+        """convert the response data into pandas dataframe.
+
+        :param response: response from server, data structure varies by
+            resource
+
+        example:
+        if <response_key>:
+            resp_data = response['<response_key>']
+        else:
+            resp_data = response
+
+        resp_data should be a list of dict.
+
+            if resp_data is formed as below:
+
+            [{ key: val, 'data': [v1, v2, v3, v4]}]
+            val_cols: ['wan_in', 'wan_out', 'lan_in', 'lan_out']
+
+            which needs to be converted into :
+
+            {key: val, 'wan_in': v1, 'wan_out': v2,
+            'lan_in': v3, 'lan_out': v4}
+
+            or resp_data can be as below:
+            [{k1: v1, k2: v2,...}...]
+
+            Last step is to convert the above into pandas dataframe
+        """
+
+        if (self.response_key and isinstance(response, dict) and
+                self.response_key in response):
+            resp_data = response[self.response_key]
+        else:
+            resp_data = response
+
+        if not resp_data:
+            return None
+
+        # check if records needs to be converted into dicts
+        if self.val_cols and self.key_col:
+            ret = []
+            for rec in resp_data:
+                _dict = (dict((k, v)
+                         for k, v in zip(self.val_cols, rec['data'])))
+                _dict[self.key_col] = rec[self.key_col]
+                ret.append(_dict)
+            resp_data = ret
+
+        return pandas.DataFrame(resp_data)
 
     def run(self):
 
@@ -142,67 +202,31 @@ class BaseSCCQuery(TableQueryBase):
         scc = DeviceManager.get_device(criteria.scc_device)
 
         datarep = getattr(scc, self.service).bind(self.resource)
+
         resp = datarep.execute(self.link, self.criteria)
 
-        if 'response_data' in resp.data:
-            data = resp.data['response_data']
+        df = self.extract_dataframe(resp.data)
+
+        if df is not None:
+            for col in columns:
+                if col not in df:
+                    raise KeyError("Table %s has no column '%s'" %
+                                   (self.job.table.name, col))
+
+            df = df.ix[:, columns]
+
+            self.data = df
+
+            logger.info("SCC job %s returning %d rows of data" %
+                        (self.job, len(self.data)))
         else:
-            data = resp.data
-
-        if not data:
-            raise SCCException("No data returned")
-        # Convert to a DataFrame to make it easier to work with
-        df = pandas.DataFrame(self.df_ready(data))
-
-        for col in columns:
-            if col not in df:
-                raise KeyError("Table %s has no column '%s'" %
-                               (self.job.table.name, col))
-
-        df = df.ix[:, columns]
-
-        self.data = df
-
-        logger.info("SCC job %s returning %d rows of data" %
-                    (self.job, len(self.data)))
+            self.data = None
         return True
 
 
 class BaseSCCStatsQuery(BaseSCCQuery):
-    """Base class for query of cmc.stats service.
-
-    :param service: string, the name of service attribute
-    :param link: string, link name to get the response
-    :param val_cols: list of name of non-key columns
-    :param key_col: string, name of key column
-    """
+    """Base class for query of cmc.stats service."""
     service = 'stats'
-    link = 'report'
-    val_cols = []
-    key_col = None
-
-    def df_ready(self, resp_data):
-        """convert the response data to a list of dicts, so that the data
-        can be easily converted into pandas dataframe.
-
-        :param resp_data: list of dicts, each dict is as
-           { key: val, 'data': [v1, v2, ...] }
-
-        example:
-           { key: val, 'data': [v1, v2, v3, v4]}
-           val_cols: ['wan_in', 'wan_out', 'lan_in', 'lan_out']
-
-        result: {key: val, 'wan_in': v1, 'wan_out': v2,
-                 'lan_in': v3, 'lan_out': v4}
-        """
-        ret = []
-        if self.val_cols and self.key_col:
-            for rec in resp_data:
-                _dict = (dict((k, v)
-                         for k, v in zip(self.val_cols, rec['data'])))
-                _dict[self.key_col] = rec[self.key_col]
-                ret.append(_dict)
-        return ret
 
     def fill_criteria(self, criteria):
         """Add start_time and end_time to the criteria dict"""
@@ -213,8 +237,10 @@ class BaseSCCStatsQuery(BaseSCCQuery):
 class SCCThroughputQuery(BaseSCCStatsQuery):
     """This class run the query to get the throughput data of a SCC device"""
     resource = 'throughput'
+    link = 'report'
     val_cols = ['wan_in', 'wan_out', 'lan_in', 'lan_out']
     key_col = 'timestamp'
+    response_key = 'response_data'
 
     def fill_criteria(self, criteria):
         super(SCCThroughputQuery, self).fill_criteria(criteria)
@@ -225,9 +251,12 @@ class SCCThroughputQuery(BaseSCCStatsQuery):
 class BaseSCCApplInvtQuery(BaseSCCQuery):
     """Base class for SCC appliance_inventory service query"""
     service = 'appliance'
-    link = 'get'
 
 
 class SCCAppliancesQuery(BaseSCCApplInvtQuery):
     """This class run the query to get the appliances data of a SCC device"""
     resource = 'appliances'
+    link = 'get'
+    key_col = None
+    val_cols = None
+    response_key = None

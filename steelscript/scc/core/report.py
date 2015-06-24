@@ -123,8 +123,11 @@ class BaseStatsReport(Report):
         """Run report to fetch data from the SCC device"""
         self._fill_criteria(**kwargs)
         self.datarep = self.scc.stats.bind(self.resource)
-        self.response = self.datarep.execute('report', self.criteria)
-        self.data = self.response.data['response_data']
+        self.response = self.datarep.execute(self.link, self.criteria)
+        if self.response_key:
+            self.data = self.response.data[self.response_key]
+        else:
+            self.data = self.response.data
 
 #
 # Bandwidth Reports
@@ -138,11 +141,15 @@ class BWStatsReport(BaseStatsReport):
 class BWUsageStatsReport(BWStatsReport):
     """Report class to return bandwidth usage"""
     resource = 'bw_usage'
+    link = 'report'
+    response_key = 'response_data'
 
 
 class BWTimeSeriesStatsReport(BWStatsReport):
     """Report class to return bandwidth timeseries"""
     resource = 'bw_timeseries'
+    link = 'report'
+    response_key = 'response_data'
 
 
 class BWPerApplStatsReport(BaseStatsReport):
@@ -150,6 +157,8 @@ class BWPerApplStatsReport(BaseStatsReport):
     required_fields = ['devices']
     non_required_fields = ['traffic_type']
     resource = 'bw_per_appliance'
+    link = 'report'
+    response_key = 'response_data'
 
 #
 # Throughput Reports
@@ -161,6 +170,8 @@ class ThroughputStatsReport(BaseStatsReport):
     required_fields = ['device']
     non_required_fields = ['traffic_type', 'port']
     resource = 'throughput'
+    link = 'report'
+    response_key = 'response_data'
 
 
 class ThroughputPerApplStatsReport(BaseStatsReport):
@@ -168,6 +179,8 @@ class ThroughputPerApplStatsReport(BaseStatsReport):
     required_fields = ['devices']
     non_required_fields = ['traffic_type']
     resource = 'throughput_per_appliance'
+    link = 'report'
+    response_key = 'response_data'
 
 #
 # Timeseries Reports for Single Device
@@ -177,21 +190,29 @@ class ThroughputPerApplStatsReport(BaseStatsReport):
 class TimeseriesStatsReport(BaseStatsReport):
     required_fields = ['device']
     non_required_fields = ['traffic_type']
+    link = 'report'
+    response_key = 'response_data'
 
 
 class ConnectionHistoryStatsReport(TimeseriesStatsReport):
     """Report class to return the max/avg connection history timeseries"""
     resource = 'connection_history'
+    link = 'report'
+    response_key = 'response_data'
 
 
 class SRDFStatsReport(TimeseriesStatsReport):
     """Report class to return the regular/peak srdf timeseries"""
     resource = 'srdf'
+    link = 'report'
+    response_key = 'response_data'
 
 
 class TCPMemoryPressureReport(TimeseriesStatsReport):
     """Report class to return regular/peak tcp memory pressure timesries"""
     resource = 'tcp_memory_pressure'
+    link = 'report'
+    response_key = 'response_data'
 
 #
 # Multiple Devices Reports
@@ -200,46 +221,64 @@ class TCPMemoryPressureReport(TimeseriesStatsReport):
 
 class MultiDevStatsReport(BaseStatsReport):
     non_required_fields = ['devices']
+    link = 'report'
+    response_key = 'response_data'
 
 
 class ConnectionPoolingStatsReport(MultiDevStatsReport):
     """Report class to return the connection pooling timeseries"""
     resource = 'connection_pooling'
+    link = 'report'
+    response_key = 'response_data'
 
 
 class ConnectionForwardingStatsReport(MultiDevStatsReport):
     """Report class to return the connection forwrding timeseries"""
     resource = 'connection_forwarding'
+    link = 'report'
+    response_key = 'response_data'
 
 
 class DNSUsageStatsReport(MultiDevStatsReport):
     """Report class to return the dns usage timeseries"""
     resource = 'dns_usage'
+    link = 'report'
+    response_key = 'response_data'
 
 
 class DNSCacheHitsStatsReport(MultiDevStatsReport):
     """Report class to return the dns cache hits timeseries"""
     resource = 'dns_cache_hits'
+    link = 'report'
+    response_key = 'response_data'
 
 
 class HTTPStatsReport(MultiDevStatsReport):
     """Report class to return the http timeseries"""
     resource = 'http'
+    link = 'report'
+    response_key = 'response_data'
 
 
 class NFSStatsReport(MultiDevStatsReport):
     """Report class to return the nfs timeseries"""
     resource = 'nfs'
+    link = 'report'
+    response_key = 'response_data'
 
 
 class SSLStatsReport(MultiDevStatsReport):
     """Report class to return the ssl timeseries"""
     resource = 'ssl'
+    link = 'report'
+    response_key = 'response_data'
 
 
 class DiskLoadStatsReport(MultiDevStatsReport):
     """Report class to return disk load timeseries"""
     resource = 'disk_load'
+    link = 'report'
+    response_key = 'response_data'
 
 #
 # Single Device Reports
@@ -248,26 +287,36 @@ class DiskLoadStatsReport(MultiDevStatsReport):
 
 class SingleDevStatsReport(BaseStatsReport):
     required_fields = ['device']
+    link = 'report'
+    response_key = 'response_data'
 
 
 class SDRAdaptiveStatsReport(SingleDevStatsReport):
     """Report class to return the SDR Adaptive timeseries"""
     resource = 'sdr_adaptive'
+    link = 'report'
+    response_key = 'response_data'
 
 
 class MemoryPagingStatsReport(SingleDevStatsReport):
     """Report class to return the memory paging timeseries"""
     resource = 'memory_paging'
+    link = 'report'
+    response_key = 'response_data'
 
 
 class CpuUtilizationStatsReport(SingleDevStatsReport):
     """Report class to return the cpu utilization timeseries"""
     resource = 'cpu_utilization'
+    link = 'report'
+    response_key = 'response_data'
 
 
 class PFSStatsReport(SingleDevStatsReport):
     """Report class to return the pfs timeseries"""
     resource = 'pfs'
+    link = 'report'
+    response_key = 'response_data'
 
 
 #
@@ -280,6 +329,8 @@ class QoSStatsReport(BaseStatsReport):
     required_fields = ['device']
     non_required_fields = ['qos_class_id', 'traffic_type']
     resource = 'qos'
+    link = 'report'
+    response_key = 'response_data'
 
 
 #
@@ -292,6 +343,8 @@ class SnapMirrorStatsReport(BaseStatsReport):
     required_fields = ['device']
     non_required_fields = ['filer_id', 'traffic_type']
     resource = 'snapmirror'
+    link = 'report'
+    response_key = 'response_data'
 
 
 #
@@ -304,6 +357,8 @@ class SteelFusionLUNIOReport(BaseStatsReport):
     required_fields = ['device']
     non_required_fields = ['traffic_type', 'lun_subclass_id']
     resource = 'granite_lun_io'
+    link = 'report'
+    response_key = 'response_data'
 
 
 class SteelFusionInitiatorIOReport(BaseStatsReport):
@@ -311,13 +366,19 @@ class SteelFusionInitiatorIOReport(BaseStatsReport):
     required_fields = ['device']
     non_required_fields = ['traffic_type', 'initiator_subclass_id']
     resource = 'granite_initiator_io'
+    link = 'report'
+    response_key = 'response_data'
 
 
 class SteelFusionNetworkIOReport(TimeseriesStatsReport):
     """Report class to return the SteelFusion network IO timeseries"""
     resource = 'granite_network_io'
+    link = 'report'
+    response_key = 'response_data'
 
 
 class SteelFusionBlockstoreReport(SteelFusionLUNIOReport):
     """Report class to return the SteelFusion blockstore timeseries"""
     resource = 'granite_blockstore'
+    link = 'report'
+    response_key = 'response_data'
