@@ -119,6 +119,7 @@ class BaseSCCQuery(TableQueryBase):
     """Base class for SCC device query, can not be directly used.
 
     :param service: string, the name of service attribute
+    :param criteria: dict, criteria of fetching the data for the resource
     :param link: string, link name to get the response
     :param val_cols: list of name of non-key columns
     :param key_col: string, name of key column
@@ -126,6 +127,7 @@ class BaseSCCQuery(TableQueryBase):
         if response_key is None, the entire resp.data is desired
 
     """
+    service = None
     criteria = None
     link = None
     val_cols = []
