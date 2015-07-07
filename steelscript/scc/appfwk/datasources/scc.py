@@ -124,9 +124,13 @@ class SCCAppliancesTable(BaseSCCApplInvtTable):
 class BaseSCCQuery(TableQueryBase):
     """Base class for SCC device query, can not be directly used.
 
+    :param service: string, reference to service attr of the scc object
+    :param resource: string, name of the resource
     :param val_cols: list of name of non-key columns
     :param key_col: string, name of key column
     """
+    service = None
+    resource = None
     val_cols = []
     key_col = None
 
