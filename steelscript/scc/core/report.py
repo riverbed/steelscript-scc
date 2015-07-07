@@ -54,19 +54,21 @@ class BaseSccReport(object):
     """Base class for SCC reports, can not be directly used for
     creating report objects.
 
+    :param svc_attr: string, attr name of the service obj
+    :param resource: string, name of the resource
+    :param link: string, name of the link to retrieve data
+    :param data_key: string, key mapping to the data in response
     :param required_fields: list of fields required by the sub-report,
         excluding start_time and end_time.
     :param non_required_fields: list of fields available to use but not
         required by the sub-report
-    :param resource: string, name of the resource
-    :param svc_attr: string, attr name of the service obj
     """
-
+    svc_attr = None
+    resource = None
+    link = None
+    data_key = None
     required_fields = []
     non_required_fields = []
-    resource = None
-    data_key = None
-    svc_attr = None
 
     def __init__(self, scc):
         self.scc = scc
@@ -125,9 +127,6 @@ class BaseStatsReport(BaseSccReport):
     on sub-classes inheriting from this class.
     """
 
-    required_fields = []
-    non_required_fields = []
-    resource = None
     svc_attr = 'stats'
 
     def _fill_criteria(self, **kwargs):
@@ -159,32 +158,31 @@ class BaseStatsReport(BaseSccReport):
 #
 
 
-class BWStatsReport(BaseStatsReport):
-    required_fields = ['start_time', 'end_time']
-    non_required_fields = ['traffic_type', 'port', 'devices']
-
-
-class BWUsageStatsReport(BWStatsReport):
+class BWUsageStatsReport(BaseStatsReport):
     """Report class to return bandwidth usage"""
     resource = 'bw_usage'
     link = 'report'
     data_key = 'response_data'
+    required_fields = ['start_time', 'end_time']
+    non_required_fields = ['traffic_type', 'port', 'devices']
 
 
-class BWTimeSeriesStatsReport(BWStatsReport):
+class BWTimeSeriesStatsReport(BaseStatsReport):
     """Report class to return bandwidth timeseries"""
     resource = 'bw_timeseries'
     link = 'report'
     data_key = 'response_data'
+    required_fields = ['start_time', 'end_time']
+    non_required_fields = ['traffic_type', 'port', 'devices']
 
 
 class BWPerApplStatsReport(BaseStatsReport):
     """Report class to return the bandwidth per appliance data"""
-    required_fields = ['devices', 'start_time', 'end_time']
-    non_required_fields = ['traffic_type']
     resource = 'bw_per_appliance'
     link = 'report'
     data_key = 'response_data'
+    required_fields = ['devices', 'start_time', 'end_time']
+    non_required_fields = ['traffic_type']
 
 #
 # Throughput Reports
@@ -193,52 +191,51 @@ class BWPerApplStatsReport(BaseStatsReport):
 
 class ThroughputStatsReport(BaseStatsReport):
     """Report class to return the peak/p95 throughput timeseries"""
-    required_fields = ['device', 'start_time', 'end_time']
-    non_required_fields = ['traffic_type', 'port']
     resource = 'throughput'
     link = 'report'
     data_key = 'response_data'
+    required_fields = ['device', 'start_time', 'end_time']
+    non_required_fields = ['traffic_type', 'port']
 
 
 class ThroughputPerApplStatsReport(BaseStatsReport):
     """Report class to return the throughput per appliance data"""
-    required_fields = ['devices', 'start_time', 'end_time']
-    non_required_fields = ['traffic_type']
     resource = 'throughput_per_appliance'
     link = 'report'
     data_key = 'response_data'
+    required_fields = ['devices', 'start_time', 'end_time']
+    non_required_fields = ['traffic_type']
 
 #
 # Timeseries Reports for Single Device
 #
 
 
-class TimeseriesStatsReport(BaseStatsReport):
-    required_fields = ['device', 'start_time', 'end_time']
-    non_required_fields = ['traffic_type']
-    link = 'report'
-    data_key = 'response_data'
-
-
-class ConnectionHistoryStatsReport(TimeseriesStatsReport):
+class ConnectionHistoryStatsReport(BaseStatsReport):
     """Report class to return the max/avg connection history timeseries"""
     resource = 'connection_history'
     link = 'report'
     data_key = 'response_data'
+    required_fields = ['device', 'start_time', 'end_time']
+    non_required_fields = ['traffic_type']
 
 
-class SRDFStatsReport(TimeseriesStatsReport):
+class SRDFStatsReport(BaseStatsReport):
     """Report class to return the regular/peak srdf timeseries"""
     resource = 'srdf'
     link = 'report'
     data_key = 'response_data'
+    required_fields = ['device', 'start_time', 'end_time']
+    non_required_fields = ['traffic_type']
 
 
-class TCPMemoryPressureReport(TimeseriesStatsReport):
+class TCPMemoryPressureReport(BaseStatsReport):
     """Report class to return regular/peak tcp memory pressure timesries"""
     resource = 'tcp_memory_pressure'
     link = 'report'
     data_key = 'response_data'
+    required_fields = ['device', 'start_time', 'end_time']
+    non_required_fields = ['traffic_type']
 
 #
 # Multiple Devices Reports
@@ -246,9 +243,8 @@ class TCPMemoryPressureReport(TimeseriesStatsReport):
 
 
 class MultiDevStatsReport(BaseStatsReport):
-    non_required_fields = ['devices', 'start_time', 'end_time']
-    link = 'report'
-    data_key = 'response_data'
+    required_fields = ['start_time', 'end_time']
+    non_required_fields = ['devices']
 
 
 class ConnectionPoolingStatsReport(MultiDevStatsReport):
@@ -313,8 +309,7 @@ class DiskLoadStatsReport(MultiDevStatsReport):
 
 class SingleDevStatsReport(BaseStatsReport):
     required_fields = ['device', 'start_time', 'end_time']
-    link = 'report'
-    data_key = 'response_data'
+    non_required_fields = []
 
 
 class SDRAdaptiveStatsReport(SingleDevStatsReport):
@@ -352,11 +347,11 @@ class PFSStatsReport(SingleDevStatsReport):
 
 class QoSStatsReport(BaseStatsReport):
     """Report class to return the outbound/inbound qos timeseries"""
-    required_fields = ['device', 'start_time', 'end_time']
-    non_required_fields = ['qos_class_id', 'traffic_type']
     resource = 'qos'
     link = 'report'
     data_key = 'response_data'
+    required_fields = ['device', 'start_time', 'end_time']
+    non_required_fields = ['qos_class_id', 'traffic_type']
 
 #
 # Snapmirror Reports
@@ -365,11 +360,11 @@ class QoSStatsReport(BaseStatsReport):
 
 class SnapMirrorStatsReport(BaseStatsReport):
     """Report class to return regular/peak snapmirror timeseries"""
-    required_fields = ['device', 'start_time', 'end_time']
-    non_required_fields = ['filer_id', 'traffic_type']
     resource = 'snapmirror'
     link = 'report'
     data_key = 'response_data'
+    required_fields = ['device', 'start_time', 'end_time']
+    non_required_fields = ['filer_id', 'traffic_type']
 
 
 #
@@ -379,34 +374,39 @@ class SnapMirrorStatsReport(BaseStatsReport):
 
 class SteelFusionLUNIOReport(BaseStatsReport):
     """Report class to return the SteelFusion lun io timeseries"""
-    required_fields = ['device', 'start_time', 'end_time']
-    non_required_fields = ['traffic_type', 'lun_subclass_id']
     resource = 'granite_lun_io'
     link = 'report'
     data_key = 'response_data'
+    required_fields = ['device', 'start_time', 'end_time']
+    non_required_fields = ['traffic_type', 'lun_subclass_id']
 
 
 class SteelFusionInitiatorIOReport(BaseStatsReport):
     """Report class to return the SteelFusion initiator io timeseries"""
-    required_fields = ['device', 'start_time', 'end_time']
-    non_required_fields = ['traffic_type', 'initiator_subclass_id']
     resource = 'granite_initiator_io'
     link = 'report'
     data_key = 'response_data'
+    required_fields = ['device', 'start_time', 'end_time']
+    non_required_fields = ['traffic_type', 'initiator_subclass_id']
 
 
-class SteelFusionNetworkIOReport(TimeseriesStatsReport):
+class SteelFusionNetworkIOReport(BaseStatsReport):
     """Report class to return the SteelFusion network IO timeseries"""
     resource = 'granite_network_io'
     link = 'report'
     data_key = 'response_data'
+    required_fields = ['start_time', 'end_time', 'device']
+    non_required_fields = ['traffic_type']
 
 
-class SteelFusionBlockstoreReport(SteelFusionLUNIOReport):
+class SteelFusionBlockstoreReport(BaseStatsReport):
     """Report class to return the SteelFusion blockstore timeseries"""
     resource = 'granite_blockstore'
     link = 'report'
     data_key = 'response_data'
+    required_fields = ['device', 'start_time', 'end_time']
+    non_required_fields = ['traffic_type', 'lun_subclass_id']
+
 
 #
 # cmc.appliance_inventory service reports
@@ -425,3 +425,6 @@ class AppliancesReport(BaseApplInvtReport):
     """Report class to return brief info of appliances"""
     resource = 'appliances'
     link = 'get'
+    data_key = None
+    required_fields = []
+    non_required_fields = []

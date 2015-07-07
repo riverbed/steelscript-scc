@@ -84,6 +84,13 @@ class SCCThroughputTable(BaseSCCStatsTable):
         field.save()
         self.fields.add(field)
 
+        # Add port field
+        field = TableField(keyword='port',
+                           label='Port',
+                           required=False)
+        field.save()
+        self.fields.add(field)
+
         # Add traffic_type field
         traffic_types = ('peak', 'p95')
         field = TableField(keyword='traffic_type',
