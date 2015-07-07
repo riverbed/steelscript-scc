@@ -124,36 +124,24 @@ class SCCAppliancesTable(BaseSCCApplInvtTable):
 class BaseSCCQuery(TableQueryBase):
     """Base class for SCC device query, can not be directly used.
 
-    :param service: string, the name of service attribute
     :param criteria: dict, criteria of fetching the data for the resource
-    :param link: string, link name to get the response
     :param val_cols: list of name of non-key columns
     :param key_col: string, name of key column
-    :param data_key: string, key to the response data
-        if data_key is None, the entire resp.data is desired
-
     """
-    service = None
     criteria = None
-    link = None
     val_cols = []
     key_col = None
-    data_key = None
 
-    def fill_criteria(self, criteria):
-        pass
-
-    def extract_dataframe(self, response):
+    def extract_dataframe(self, resp_data):
         """convert the response data into pandas dataframe.
 
-        :param response: response from server, data structure varies by
-            resource
+        :param resp_data: reponse data
 
         example:
-        if <data_key>:
-            resp_data = response['<data_key>']
+        if <report.data_key>:
+            resp_data = report.data['<report.data_key>']
         else:
-            resp_data = response
+            resp_data = report.data
 
         resp_data should be a list of dict.
 
@@ -162,7 +150,7 @@ class BaseSCCQuery(TableQueryBase):
             [{ key: val, 'data': [v1, v2, v3, v4]}]
             val_cols: ['wan_in', 'wan_out', 'lan_in', 'lan_out']
 
-            which needs to be converted into :
+            it needs to be converted into :
 
             {key: val, 'wan_in': v1, 'wan_out': v2,
             'lan_in': v3, 'lan_out': v4}
@@ -172,12 +160,6 @@ class BaseSCCQuery(TableQueryBase):
 
             Last step is to convert the above into pandas dataframe
         """
-
-        if (self.data_key and isinstance(response, dict) and
-                self.data_key in response):
-            resp_data = response[self.data_key]
-        else:
-            resp_data = response
 
         if not resp_data:
             return None
@@ -251,27 +233,23 @@ class BaseSCCQuery(TableQueryBase):
 
 class BaseSCCStatsQuery(BaseSCCQuery):
     """Base class for query of cmc.stats service."""
-    service = 'cmc.stats'
+    service = 'stats'
 
 
 class SCCThroughputQuery(BaseSCCStatsQuery):
     """This class run the query to get the throughput data of a SCC device"""
     resource = 'throughput'
-    link = 'report'
     val_cols = ['wan_in', 'wan_out', 'lan_in', 'lan_out']
     key_col = 'timestamp'
-    data_key = 'response_data'
 
 
 class BaseSCCApplInvtQuery(BaseSCCQuery):
     """Base class for SCC appliance_inventory service query"""
-    service = 'cmc.appliance_inventory'
+    service = 'appliance_inventory'
 
 
 class SCCAppliancesQuery(BaseSCCApplInvtQuery):
     """This class run the query to get the appliances data of a SCC device"""
     resource = 'appliances'
-    link = 'get'
     key_col = None
-    val_cols = None
-    data_key = None
+    val_cols = []

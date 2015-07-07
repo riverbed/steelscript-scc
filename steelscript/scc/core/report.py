@@ -9,7 +9,7 @@ import logging
 from steelscript.netprofiler.core.filters import TimeFilter
 from steelscript.common.timeutils import datetime_to_seconds
 
-
+# Below are mappings from resource to report class
 scc_stats_reports = {
     'bw_usage': 'BWUsageStatsReport',
     'bw_timeseries': 'BWTimeSeriesStatsReport',
@@ -40,8 +40,12 @@ scc_stats_reports = {
 
 scc_appl_reports = {'appliances': 'AppliancesReport'}
 
-scc_reports = {'cmc.stats': scc_stats_reports,
-               'cmc.appliance_inventory': scc_appl_reports}
+# Remove prefix 'cmc' from the actual service name
+# 'cmc.stats' or 'cmc.appliance_inventory' for easy
+# reference of scc service attributes
+
+scc_reports = {'stats': scc_stats_reports,
+               'appliance_inventory': scc_appl_reports}
 
 logger = logging.getLogger(__name__)
 
@@ -54,16 +58,17 @@ class BaseSccReport(object):
     """Base class for SCC reports, can not be directly used for
     creating report objects.
 
-    :param svc_attr: string, attr name of the service obj
+    :param service: string, attr name of the service obj
     :param resource: string, name of the resource
     :param link: string, name of the link to retrieve data
     :param data_key: string, key mapping to the data in response
+        if None, then the entire reponse is desired
     :param required_fields: list of fields required by the sub-report,
         excluding start_time and end_time.
     :param non_required_fields: list of fields available to use but not
         required by the sub-report
     """
-    svc_attr = None
+    service = None
     resource = None
     link = None
     data_key = None
@@ -108,7 +113,7 @@ class BaseSccReport(object):
     def run(self, **kwargs):
         """Run report to fetch data from the SCC device"""
         self._fill_criteria(**kwargs)
-        svc_obj = getattr(self.scc, self.svc_attr)
+        svc_obj = getattr(self.scc, self.service)
         self.datarep = svc_obj.bind(self.resource)
         self.response = self.datarep.execute(self.link, self.criteria)
         if (self.data_key and isinstance(self.response.data, dict) and
@@ -127,7 +132,7 @@ class BaseStatsReport(BaseSccReport):
     on sub-classes inheriting from this class.
     """
 
-    svc_attr = 'stats'
+    service = 'stats'
 
     def _fill_criteria(self, **kwargs):
 
@@ -418,7 +423,7 @@ class BaseApplInvtReport(BaseSccReport):
     directly used for creating reports objects. All report instances are
     derived based on sub-classes inheriting from this class.
     """
-    svc_attr = 'appliance_inventory'
+    service = 'appliance_inventory'
 
 
 class AppliancesReport(BaseApplInvtReport):
