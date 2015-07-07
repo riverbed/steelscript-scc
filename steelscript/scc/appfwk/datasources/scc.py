@@ -124,11 +124,9 @@ class SCCAppliancesTable(BaseSCCApplInvtTable):
 class BaseSCCQuery(TableQueryBase):
     """Base class for SCC device query, can not be directly used.
 
-    :param criteria: dict, criteria of fetching the data for the resource
     :param val_cols: list of name of non-key columns
     :param key_col: string, name of key column
     """
-    criteria = None
     val_cols = []
     key_col = None
 
@@ -138,11 +136,6 @@ class BaseSCCQuery(TableQueryBase):
         :param resp_data: reponse data
 
         example:
-        if <report.data_key>:
-            resp_data = report.data['<report.data_key>']
-        else:
-            resp_data = report.data
-
         resp_data should be a list of dict.
 
             if resp_data is formed as below:
