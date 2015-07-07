@@ -6,7 +6,6 @@
 
 
 import logging
-
 import pandas
 
 from django import forms
@@ -16,9 +15,9 @@ from steelscript.appfwk.apps.datasource.models import \
 from steelscript.appfwk.apps.devices.devicemanager import DeviceManager
 from steelscript.appfwk.apps.devices.forms import fields_add_device_selection
 from steelscript.appfwk.apps.datasource.forms import fields_add_time_selection
-from steelscript.common.timeutils import datetime_to_seconds
 from steelscript.appfwk.apps.datasource.models import TableField
 
+import steelscript.scc.core.report as report_mod
 
 logger = logging.getLogger(__name__)
 
@@ -79,7 +78,7 @@ class SCCThroughputTable(BaseSCCStatsTable):
         super(SCCThroughputTable, self).post_process_table(field_options)
 
         # Add device ID field
-        field = TableField(keyword='device_id',
+        field = TableField(keyword='device',
                            label='Device Serial ID',
                            required=True)
         field.save()
@@ -123,8 +122,8 @@ class BaseSCCQuery(TableQueryBase):
     :param link: string, link name to get the response
     :param val_cols: list of name of non-key columns
     :param key_col: string, name of key column
-    :param response_key: string, key to the response data
-        if response_key is None, the entire resp.data is desired
+    :param data_key: string, key to the response data
+        if data_key is None, the entire resp.data is desired
 
     """
     service = None
@@ -132,7 +131,7 @@ class BaseSCCQuery(TableQueryBase):
     link = None
     val_cols = []
     key_col = None
-    response_key = None
+    data_key = None
 
     def fill_criteria(self, criteria):
         pass
@@ -144,8 +143,8 @@ class BaseSCCQuery(TableQueryBase):
             resource
 
         example:
-        if <response_key>:
-            resp_data = response['<response_key>']
+        if <data_key>:
+            resp_data = response['<data_key>']
         else:
             resp_data = response
 
@@ -167,9 +166,9 @@ class BaseSCCQuery(TableQueryBase):
             Last step is to convert the above into pandas dataframe
         """
 
-        if (self.response_key and isinstance(response, dict) and
-                self.response_key in response):
-            resp_data = response[self.response_key]
+        if (self.data_key and isinstance(response, dict) and
+                self.data_key in response):
+            resp_data = response[self.data_key]
         else:
             resp_data = response
 
@@ -197,17 +196,34 @@ class BaseSCCQuery(TableQueryBase):
             self.job.mark_error("No SCC Device Selected")
             return False
 
-        self.fill_criteria(criteria)
-
         columns = [col.name for col in self.table.get_columns(synthetic=False)]
 
         scc = DeviceManager.get_device(criteria.scc_device)
 
-        datarep = getattr(scc, self.service).bind(self.resource)
+        # obtain the report class definition
+        report_cls = getattr(
+            report_mod, report_mod.scc_reports[self.service][self.resource])
 
-        resp = datarep.execute(self.link, self.criteria)
+        # instatiate a report object
+        report_obj = report_cls(scc)
 
-        df = self.extract_dataframe(resp.data)
+        # Build criteria kwargs
+        kwargs = {}
+        for name in set(report_obj.required_fields +
+                        report_obj.non_required_fields):
+            # criteria has attrs as starttime, endtime
+            # which maps to start_time and end_time
+            # referenced in a SCC service
+            if name in ['start_time', 'end_time']:
+                name_in_criteria = name.replace('_', '')
+            else:
+                name_in_criteria = name
+
+            if hasattr(criteria, name_in_criteria):
+                kwargs[name] = getattr(criteria, name_in_criteria)
+        report_obj.run(**kwargs)
+
+        df = self.extract_dataframe(report_obj.data)
 
         if df is not None:
             for col in columns:
@@ -228,12 +244,7 @@ class BaseSCCQuery(TableQueryBase):
 
 class BaseSCCStatsQuery(BaseSCCQuery):
     """Base class for query of cmc.stats service."""
-    service = 'stats'
-
-    def fill_criteria(self, criteria):
-        """Add start_time and end_time to the criteria dict"""
-        self.criteria = {'start_time': datetime_to_seconds(criteria.starttime),
-                         'end_time': datetime_to_seconds(criteria.endtime)}
+    service = 'cmc.stats'
 
 
 class SCCThroughputQuery(BaseSCCStatsQuery):
@@ -242,17 +253,12 @@ class SCCThroughputQuery(BaseSCCStatsQuery):
     link = 'report'
     val_cols = ['wan_in', 'wan_out', 'lan_in', 'lan_out']
     key_col = 'timestamp'
-    response_key = 'response_data'
-
-    def fill_criteria(self, criteria):
-        super(SCCThroughputQuery, self).fill_criteria(criteria)
-
-        self.criteria['device'] = criteria.device_id
+    data_key = 'response_data'
 
 
 class BaseSCCApplInvtQuery(BaseSCCQuery):
     """Base class for SCC appliance_inventory service query"""
-    service = 'appliance'
+    service = 'cmc.appliance_inventory'
 
 
 class SCCAppliancesQuery(BaseSCCApplInvtQuery):
@@ -261,4 +267,4 @@ class SCCAppliancesQuery(BaseSCCApplInvtQuery):
     link = 'get'
     key_col = None
     val_cols = None
-    response_key = None
+    data_key = None

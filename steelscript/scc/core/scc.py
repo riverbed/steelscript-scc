@@ -101,6 +101,6 @@ class SCC(object):
         svcmgr = SCCServiceManager()
         self.stats = svcmgr.find_by_name(host=host, name='cmc.stats',
                                          version='1.0', auth=auth)
-        self.appliance = svcmgr.find_by_name(
+        self.appliance_inventory = svcmgr.find_by_name(
             host=host, name='cmc.appliance_inventory', version='1.0',
             auth=auth)

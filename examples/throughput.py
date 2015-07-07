@@ -88,9 +88,10 @@ class ThroughputStatsReportApp(SCCApp):
         valid_options = (['timefilter'] + report.required_fields +
                          report.non_required_fields)
         for opt in valid_options:
-            v = getattr(self.options, opt)
-            if v:
-                kwargs[opt] = v
+            if hasattr(self.options, opt):
+                v = getattr(self.options, opt)
+                if v:
+                    kwargs[opt] = v
 
         report.run(**kwargs)
         pprint.pprint(report.data)

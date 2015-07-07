@@ -79,13 +79,14 @@ class BWStatsReportApp(SCCApp):
                                self.class_map[self.options.report])
         report = report_class(self.scc)
         kwargs = {}
-        valid_options = (['timefilter'] + report.required_fields +
-                         report.non_required_fields)
-        for opt in valid_options:
-            v = getattr(self.options, opt)
-            if v:
-                kwargs[opt] = v
+        valid_options = set(['timefilter'] + report.required_fields +
+                            report.non_required_fields)
 
+        for opt in valid_options:
+            if hasattr(self.options, opt):
+                v = getattr(self.options, opt)
+                if v:
+                    kwargs[opt] = v
         report.run(**kwargs)
         pprint.pprint(report.data)
 
