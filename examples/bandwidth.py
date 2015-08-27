@@ -83,10 +83,9 @@ class BWStatsReportApp(SCCApp):
                             report.non_required_fields)
 
         for opt in valid_options:
-            if hasattr(self.options, opt):
-                v = getattr(self.options, opt)
-                if v:
-                    kwargs[opt] = v
+            v = getattr(self.options, opt, None)
+            if v:
+                kwargs[opt] = v
         report.run(**kwargs)
         pprint.pprint(report.data)
 

@@ -10,14 +10,16 @@ import pandas
 
 from django import forms
 
+import steelscript.scc.core.report as report_mod
+
 from steelscript.appfwk.apps.datasource.models import \
     DatasourceTable, TableQueryBase
 from steelscript.appfwk.apps.devices.devicemanager import DeviceManager
 from steelscript.appfwk.apps.devices.forms import fields_add_device_selection
 from steelscript.appfwk.apps.datasource.forms import fields_add_time_selection
 from steelscript.appfwk.apps.datasource.models import TableField
-
-import steelscript.scc.core.report as report_mod
+from steelscript.scc.core.report import get_scc_report_class
+from steelscript.appfwk.apps.jobs import QueryComplete
 
 logger = logging.getLogger(__name__)
 
@@ -188,7 +190,7 @@ class BaseSCCQuery(TableQueryBase):
 
         # obtain the report class definition
         report_cls = getattr(
-            report_mod, report_mod.scc_reports[self.service][self.resource])
+            report_mod, get_scc_report_class(self.service, self.resource))
 
         # instatiate a report object
         report_obj = report_cls(scc)
@@ -225,7 +227,7 @@ class BaseSCCQuery(TableQueryBase):
                         (self.job, len(self.data)))
         else:
             self.data = None
-        return True
+        return QueryComplete(self.data)
 
 
 class BaseSCCStatsQuery(BaseSCCQuery):

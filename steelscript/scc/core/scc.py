@@ -28,21 +28,23 @@ class SCCException(Exception):
 class ServiceDefLoader(ServiceDef.ServiceDefLoadHook):
     """This class serves as the custom hook for service manager."""
 
-    def find_by_id(self, id):
+    def find_by_id(self, id_):
         """
         This method generates service schema corresponding to the id
 
-        :param id: Service id specified in service definition file
+        :param id_: Service id specified in service definition file
         """
-        # Convert id from http format to file name first
-        service = id.rstrip('/').rsplit('/', 2)[1]
+        # Convert id_ from http format to file name first
+        # id_ is of the form as below:
+        # 'https://support.riverbed.com/apis/<service>/<version>'
+        service = id_.rsplit('/', 2)[1]
         current_dir = os.path.dirname(__file__)
         filename = os.path.join(current_dir,
                                 'servicedef/{0}.yml'.format(service))
         if os.path.isfile(filename):
             return ServiceDef.ServiceDef.create_from_file(filename)
         else:
-            raise ValueError("Invalid id: %s" % id)
+            raise ValueError("Invalid id_: %s" % id_)
 
     def find_by_name(self, name, version, provider):
         """
