@@ -29,7 +29,7 @@ object to pull data and create new reports.
 In most cases you will not use :py:class:`BaseStatsReport <report.BaseStatsReport>`
 directly -- your scripts will use a more helpful object tailored to the
 desired report, such as a
-:py:class:`BWUsageStatsReport <report.BWUsageStatsReport>` or a
+:py:class:`BWTimeSeriesStatsReport <report.BWTimeSeriesStatsReport>` or a
 :py:class:`ThroughputStatsReport <report.ThroughputStatsReport>`.
 We will cover those shortly.
 
@@ -62,35 +62,40 @@ SteelScript-SCC comes with a comprehensive coverage of all resources
 underneath the ``cmc.stats`` service. One just needs to browse through
 classes defined in the :py:mod:`steelscript.scc.core<steelscript.scc.core>`
 module to use the report class matching current needs. For example, in order to get
-optimized bandwidth usage of all devices associated with the SCC appliance,
-:py:class:`BWUsageStatsReport <report.BWUsageStatsReport>` is the one to use.
+optimized bandwidth at different times of all devices associated with the SCC appliance,
+:py:class:`BWTimeSeriesStatsReport <report.BWTimeSeriesStatsReport>` is the one to use.
 
 .. code-block:: python
 
-    >>> from steelscript.scc.core import BWUsageStatsReport
+    >>> from steelscript.scc.core import BWTimeSeriesStatsReport
     >>> import pprint
-    >>> report = BWUsageStatsReport(scc)
+    >>> report = BWTimeSeriesStatsReport(scc)
     >>> report.run(timefilter="last 1 hour", traffic_type='optimized')
     >>> pprint.pprint(report.data)
-    [{u'data': [7533.0, 7068.0, 51163.0, 46908.0], u'port': 5357},
-     {u'data': [2892232.0, 2922770700.0, 135907.0, 3087530900.0], u'port': 8080},
-     {u'data': [141073800.0, 1219051.0, 179353770.0, 17400.0], u'port': 20000},
-     {u'data': [90910214.0, 828152.0, 124303120.0, 11840.0], u'port': 20001},
-     {u'data': [87283800.0, 773560.0, 117157580.0, 11480.0], u'port': 20002},
-     {u'data': [115996420.0, 1045455.0, 154281210.0, 14480.0], u'port': 20003},
-     {u'data': [103978370.0, 904177.0, 136756050.0, 13360.0], u'port': 20004},
-     {u'data': [84806410.0, 791903.0, 120069113.0, 12240.0], u'port': 20005},
-     {u'data': [110010958.0, 983224.0, 146348590.0, 14120.0], u'port': 20006},
-     {u'data': [56573288.0, 588490.0, 89552774.0, 8760.0], u'port': 20007},
-     {u'data': [83459250.0, 776085.0, 117758570.0, 10880.0], u'port': 20008},
-     {u'data': [72793617.0, 731987.0, 111386053.0, 10880.0], u'port': 20009},
-     {u'data': [101631357.0, 889462.0, 131271187.0, 12800.0], u'port': 20010},
-     {u'data': [101687340.0, 918534.0, 137246030.0, 13240.0], u'port': 20011},
-     {u'data': [138074650.0, 1159541.0, 172217020.0, 15440.0], u'port': 20012},
-     {u'data': [92761940.0, 937590.0, 140369910.0, 13480.0], u'port': 20013},
-     {u'data': [121041660.0, 1059131.0, 155970970.0, 15080.0], u'port': 20014},
-      ...
-     {u'data': [72989030.0, 686568.0, 104896060.0, 10760.0], u'port': 20249}]
+    [{u'data': [7308580.0, 16571400.0, 13216600.0, 68872900.0],
+      u'timestamp': 1440780000},
+     {u'data': [6002410.0, 23606000.0, 10935900.0, 52749800.0],
+      u'timestamp': 1440780300},
+     {u'data': [4056250.0, 16865900.0, 6394300.0, 37789200.0],
+      u'timestamp': 1440780600},
+     {u'data': [5850490.0, 44258800.0, 11690500.0, 104962000.0],
+      u'timestamp': 1440780900},
+     {u'data': [7468290.0, 24188900.0, 12829400.0, 84234000.0],
+      u'timestamp': 1440781200},
+     {u'data': [13041800.0, 34822600.0, 17672900.0, 77343300.0],
+      u'timestamp': 1440781500},
+     {u'data': [182396000.0, 206378000.0, 195764000.0, 261148000.0],
+      u'timestamp': 1440781800},
+     {u'data': [178387000.0, 194976000.0, 199298000.0, 235883000.0],
+      u'timestamp': 1440782100},
+     {u'data': [177016000.0, 203324000.0, 190545000.0, 261889000.0],
+      u'timestamp': 1440782400},
+     {u'data': [187747000.0, 416022000.0, 197363000.0, 450196000.0],
+      u'timestamp': 1440782700},
+     {u'data': [151403000.0, 334982000.0, 216453000.0, 422683000.0],
+      u'timestamp': 1440783000},
+     {u'data': [159875000.0, 409043000.0, 190787000.0, 451655000.0],
+      u'timestamp': 1440783300}]
 
 Note that ``timefilter`` specifies the time range of the query and ``traffic_type``
 determines the type of traffic to query.
@@ -111,15 +116,15 @@ present data in a table-like format.
     import pprint
 
     from steelscript.scc.core.app import SCCApp
-    from steelscript.scc.core import BWUsageStatsReport
+    from steelscript.scc.core import BWTimeSeriesStatsReport
 
 
-    class BWUsageStatsReportApp(SCCApp):
+    class BWTimeSeriesStatsReportApp(SCCApp):
 
         traffic_types = ['optimized', 'passthrough']
 
         def add_options(self, parser):
-            super(BWUsageStatsReportApp, self).add_options(parser)
+            super(BWTimeSeriesStatsReportApp, self).add_options(parser)
 
             parser.add_option(
                 '--timefilter', dest='timefilter', default='last 1 hour',
@@ -140,7 +145,7 @@ present data in a table-like format.
             parser.add_option('--port', dest='port', default=None)
 
         def main(self):
-            report = BWUsageStatsReport(self.scc)
+            report = BWTimeSeriesStatsReport(self.scc)
             report.run(traffic_type=self.options.traffic_type,
                        timefilter=self.options.timefilter,
                        devices=self.options.devices,
@@ -148,33 +153,37 @@ present data in a table-like format.
             pprint.pprint(report.data)
 
     if __name__ == '__main__':
-        BWUsageStatsReportApp().run()
+        BWTimeSeriesStatsReportApp().run()
 
 Copy the above code into a new file, and now you can run the file to display the data.
 
 .. code-block:: python
 
-   > python myreport.py $hostname $access_code --devices $serial_numbers --traffic_type 'optimized' --timefilter 'last 10 min'
-    [{u'data': [0, 0, 0, 0], u'port': 8080},
-     {u'data': [31550200.0, 238201.0, 33113300.0, 3080.0], u'port': 20000},
-     {u'data': [17476320.0, 186590.0, 25823480.0, 2720.0], u'port': 20001},
-     {u'data': [16470080.0, 160966.0, 22293780.0, 2320.0], u'port': 20002},
-     {u'data': [9187440.0, 87432.0, 12095170.0, 1440.0], u'port': 20003},
-     {u'data': [13492540.0, 111126.0, 15268660.0, 1840.0], u'port': 20004},
-     {u'data': [25354800.0, 224038.0, 31030400.0, 3080.0], u'port': 20005},
-     {u'data': [15778460.0, 152416.0, 20889110.0, 2640.0], u'port': 20006},
-     {u'data': [7519940.0, 73920.0, 10178730.0, 1120.0], u'port': 20007},
-     {u'data': [45202700.0, 384284.0, 53517400.0, 4840.0], u'port': 20008},
-     {u'data': [17490280.0, 154565.0, 21514590.0, 2200.0], u'port': 20009},
-     {u'data': [25921920.0, 203100.0, 28269880.0, 2720.0], u'port': 20010},
-     {u'data': [31410490.0, 225853.0, 31247250.0, 3040.0], u'port': 20011},
-     {u'data': [17721410.0, 153212.0, 21216240.0, 2200.0], u'port': 20012},
-     {u'data': [22082020.0, 190754.0, 26339980.0, 2640.0], u'port': 20013},
-     {u'data': [31591550.0, 248953.0, 34635500.0, 3320.0], u'port': 20014},
-     {u'data': [17336960.0, 138849.0, 19120030.0, 2080.0], u'port': 20015},
-     {u'data': [32534700.0, 247688.0, 34171100.0, 3560.0], u'port': 20016},
-     ...
-     {u'data': [16553200.0, 157697.0, 21735970.0, 2320.0], u'port': 20249}]]
+   > python myreport.py $hostname $access_code --devices $serial_numbers --traffic_type 'optimized' --timefilter 'last 1 hour'
+    [{u'data': [7308580.0, 16571400.0, 13216600.0, 68872900.0],
+      u'timestamp': 1440780000},
+     {u'data': [6002410.0, 23606000.0, 10935900.0, 52749800.0],
+      u'timestamp': 1440780300},
+     {u'data': [4056250.0, 16865900.0, 6394300.0, 37789200.0],
+      u'timestamp': 1440780600},
+     {u'data': [5850490.0, 44258800.0, 11690500.0, 104962000.0],
+      u'timestamp': 1440780900},
+     {u'data': [7468290.0, 24188900.0, 12829400.0, 84234000.0],
+      u'timestamp': 1440781200},
+     {u'data': [13041800.0, 34822600.0, 17672900.0, 77343300.0],
+      u'timestamp': 1440781500},
+     {u'data': [182396000.0, 206378000.0, 195764000.0, 261148000.0],
+      u'timestamp': 1440781800},
+     {u'data': [178387000.0, 194976000.0, 199298000.0, 235883000.0],
+      u'timestamp': 1440782100},
+     {u'data': [177016000.0, 203324000.0, 190545000.0, 261889000.0],
+      u'timestamp': 1440782400},
+     {u'data': [187747000.0, 416022000.0, 197363000.0, 450196000.0],
+      u'timestamp': 1440782700},
+     {u'data': [151403000.0, 334982000.0, 216453000.0, 422683000.0],
+      u'timestamp': 1440783000},
+     {u'data': [159875000.0, 409043000.0, 190787000.0, 451655000.0],
+      u'timestamp': 1440783300}]
 
 Now let us walk through the above script in detail.
 
@@ -187,21 +196,21 @@ First we need to import some modules.
     import pprint
 
     from steelscript.scc.core.app import SCCApp
-    from steelscript.scc.core import BWUsageStatsReport
+    from steelscript.scc.core import BWTimeSeriesStatsReport
 
 The first line is called a shebang, it tells the system that the script should
 be executed using the program after '#!'. The ``SCCApp`` is imported for ease
 of writing scripts to generate reports for SCC. The
-:py:class:`BWUsageStatsReport <report.BWUsageStatsReport>` is
-imported to facilitate reporting data retrieved at resource 'bw_usage', which
+:py:class:`BWTimeSeriesStatsReport <report.BWTimeSeriesStatsReport>` is
+imported to facilitate reporting data retrieved at resource 'bw_timeseries', which
 belongs to the 'cmc.stats' service on a SCC device.
 
 .. code-block:: python
 
-    class BWUsageStatsReportApp(SCCApp):
+    class BWTimeSeriesStatsReportApp(SCCApp):
 
         def add_options(self, parser):
-            super(BWUsageStatsReportApp, self).add_options(parser)
+            super(BWTimeSeriesStatsReportApp, self).add_options(parser)
 
             parser.add_option(
                 '--timefilter', dest='timefilter', default='last 1 hour',
@@ -221,7 +230,7 @@ belongs to the 'cmc.stats' service on a SCC device.
 
             parser.add_option('--port', dest='port', default=None)
 
-This section begins with definition of the ``BWUsageStatsReportApp`` class,
+This section begins with definition of the ``BWTimeSeriesStatsReportApp`` class,
 which inherits from the class :py:class:`SCCApp<app.SCCApp>`. The inheritence
 saves work of adding hostname option as well as access code option, both of which
 are required for fetching data from SCC device.
@@ -233,7 +242,7 @@ traffic type, devices and port. The help text for each option can be seen using 
 .. code-block:: python
 
         def main(self):
-            report = BWUsageStatsReport(self.scc)
+            report = BWTimeSeriesStatsReport(self.scc)
             report.run(traffic_type=self.options.traffic_type,
                        timefilter=self.options.timefilter,
                        devices=self.options.devices,
@@ -241,10 +250,10 @@ traffic type, devices and port. The help text for each option can be seen using 
             pprint.pprint(report.data)
 
     if __name__ == '__main__':
-        BWUsageStatsReportApp().run()
+        BWTimeSeriesStatsReportApp().run()
 
 This is the main part of the script. The ``run`` method of the
-:py:class:`BWUsageStatsReport <report.BWUsageStatsReport>`
+:py:class:`BWTimeSeriesStatsReport <report.BWTimeSeriesStatsReport>`
 class will execute its ``main`` method. In the ``main`` method, ``self.scc`` represents
 the SCC object, which has been created by :py:class:`SCCApp<app.SCCApp>` class.
 ``report.run`` will use all the input options and retrieve data via the SCC object.
