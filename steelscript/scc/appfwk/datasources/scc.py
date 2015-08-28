@@ -10,8 +10,6 @@ import pandas
 
 from django import forms
 
-import steelscript.scc.core.report as report_mod
-
 from steelscript.appfwk.apps.datasource.models import \
     DatasourceTable, TableQueryBase
 from steelscript.appfwk.apps.devices.devicemanager import DeviceManager
@@ -189,8 +187,7 @@ class BaseSCCQuery(TableQueryBase):
         scc = DeviceManager.get_device(criteria.scc_device)
 
         # obtain the report class definition
-        report_cls = getattr(
-            report_mod, get_scc_report_class(self.service, self.resource))
+        report_cls = get_scc_report_class(self.service, self.resource)
 
         # instatiate a report object
         report_obj = report_cls(scc)

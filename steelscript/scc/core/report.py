@@ -51,7 +51,8 @@ logger = logging.getLogger(__name__)
 
 
 def get_scc_report_class(service, resource):
-    return scc_reports[service][resource]
+    """Return report class based on service name and resource name."""
+    return eval(scc_reports[service][resource])
 
 
 class SCCException(Exception):
