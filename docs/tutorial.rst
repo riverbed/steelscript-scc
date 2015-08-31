@@ -21,10 +21,10 @@ SCC Objects
 Interacting with a SCC leverages two key classes:
 
 * :py:class:`SCC <scc.SCC>` - provides the primary interface to the
-appliance, handling initialization, setup and communication via REST API calls.
+  appliance, handling initialization, setup and communication via REST API calls.
 
 * :py:class:`BaseStatsReport <report.BaseStatsReport>` - leverages the SCC
-object to pull data and create new reports.
+  object to pull data and create new reports.
 
 In most cases you will not use :py:class:`BaseStatsReport <report.BaseStatsReport>`
 directly -- your scripts will use a more helpful object tailored to the
@@ -40,7 +40,7 @@ As with any Python code, the first step is to import the modules involved.
 The SteelScript code for working with SCC appliances resides in a module
 :py:mod:`steelscript.scc.core`. The main class in this module is
 :py:class:`SCC <scc.SCC>`. This object represents a connection to an
-SCC appliance. Let us see how easy it is to create an SCC object.
+SCC appliance. Let's see how easy it is to create an SCC object.
 
 .. code-block:: python
 
@@ -52,7 +52,8 @@ Replace the first argument ``$hostname`` with the hostname or IP address
 of the SCC appliance. Note that a URI scheme needs to be included in
 ``$hostname``, e.g. ``https://``. The second argument is an access code,
 which is required for OAuth 2.0 authentication. The access code is usually
-obtained on the web UI of the SCC appliance.
+obtained on the web UI of the SCC appliance (See the "Enabling REST API Access"
+section in your SCC documentation for more information).
 
 Generating Reports
 ------------------
@@ -71,6 +72,14 @@ optimized bandwidth at different times of all devices associated with the SCC ap
     >>> import pprint
     >>> report = BWTimeSeriesStatsReport(scc)
     >>> report.run(timefilter="last 1 hour", traffic_type='optimized')
+
+Note that ``timefilter`` specifies the time range of the query and ``traffic_type``
+determines the type of traffic to query.
+
+Now that the report has been run, we can fetch the data by accessing the data attribute:
+
+.. code-block:: python
+
     >>> pprint.pprint(report.data)
     [{u'data': [7308580.0, 16571400.0, 13216600.0, 68872900.0],
       u'timestamp': 1440780000},
@@ -97,8 +106,6 @@ optimized bandwidth at different times of all devices associated with the SCC ap
      {u'data': [159875000.0, 409043000.0, 190787000.0, 451655000.0],
       u'timestamp': 1440783300}]
 
-Note that ``timefilter`` specifies the time range of the query and ``traffic_type``
-determines the type of traffic to query.
 
 Extending the Example
 ---------------------
