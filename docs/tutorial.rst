@@ -49,8 +49,7 @@ SCC appliance. Let's see how easy it is to create an SCC object.
    >>> scc = SCC(host='$hostname', auth=OAuth('$access_code'))
 
 Replace the first argument ``$hostname`` with the hostname or IP address
-of the SCC appliance. Note that a URI scheme needs to be included in
-``$hostname``, e.g. ``https://``. The second argument is an access code,
+of the SCC appliance. The second argument is an access code,
 which is required for OAuth 2.0 authentication. The access code is usually
 obtained on the web UI of the SCC appliance (See the "Enabling REST API Access"
 section in your SCC documentation for more information).
