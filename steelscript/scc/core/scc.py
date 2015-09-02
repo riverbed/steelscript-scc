@@ -41,6 +41,7 @@ class ServiceDefLoader(ServiceDef.ServiceDefLoadHook):
         current_dir = os.path.dirname(__file__)
         filename = os.path.join(current_dir,
                                 'servicedef/{0}.yml'.format(service))
+
         if os.path.isfile(filename):
             return ServiceDef.ServiceDef.create_from_file(filename)
         else:
@@ -65,6 +66,15 @@ class SCCServerConnectionHook(sleepwalker.connection.ConnectionHook):
     def connect(self, host, auth):
         """Create a connection to the server"""
         svc = Service("scc", host=host, auth=auth)
+
+        # check software version, needs to be equal or bigger than 9.0
+        path = '/api/common/1.0/info'
+        info = svc.conn.json_request('GET', path)
+        sw_version = info.get('sw_version', None)
+        if not sw_version or int(sw_version.split('.')[0]) < 9:
+            msg = ("Software version %s is not supported." % sw_version)
+            raise SCCException(msg)
+
         return svc.conn
 
 
