@@ -72,7 +72,8 @@ class SCCServerConnectionHook(sleepwalker.connection.ConnectionHook):
         info = svc.conn.json_request('GET', path)
         sw_version = info.get('sw_version', None)
         if not sw_version or int(sw_version.split('.')[0]) < 9:
-            msg = ("Software version %s is not supported." % sw_version)
+            msg = ("Minimum supported SCC software version is 9.0, "
+                   "but you are running %s." % sw_version)
             raise SCCException(msg)
 
         return svc.conn
