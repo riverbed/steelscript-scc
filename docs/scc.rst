@@ -37,10 +37,10 @@ SteelScript SCC Sources
 
 .. currentmodule:: steelscript.scc.core.report
 
-:py:class:`Report` Objects
---------------------------
+:py:class:`BaseSCCReport` Objects
+---------------------------------
 
-.. autoclass:: Report
+.. autoclass:: BaseSCCReport
    :members:
 
    .. automethod:: __init__
@@ -54,14 +54,6 @@ SteelScript SCC Sources
    :show-inheritance:
 
    .. automethod:: __init__
-
-:py:class:`BWStatsReport` Objects
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-.. autoclass:: BWStatsReport
-   :members:
-   :inherited-members:
-   :show-inheritance:
 
 :py:class:`BWUsageStatsReport` Objects
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -99,14 +91,6 @@ SteelScript SCC Sources
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. autoclass:: ThroughputPerApplStatsReport
-   :members:
-   :inherited-members:
-   :show-inheritance:
-
-:py:class:`TimeSeriesStatsReport` Objects
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-.. autoclass:: ThroughputStatsReport
    :members:
    :inherited-members:
    :show-inheritance:
@@ -293,6 +277,23 @@ SteelScript SCC Sources
    :members:
    :inherited-members:
    :show-inheritance:
+
+:py:class:`BaseApplInvtReport` Objects
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. autoclass:: BaseApplInvtReport
+   :members:
+   :inherited-members:
+   :show-inheritance:
+
+:py:class:`AppliancesReport` Objects
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. autoclass:: AppliancesReport
+   :members:
+   :inherited-members:
+   :show-inheritance:
+
 
 .. currentmodule:: steelscript.scc.core.app
 
