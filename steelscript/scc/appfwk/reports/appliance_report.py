@@ -28,7 +28,7 @@ import steelscript.appfwk.apps.report.modules.yui3 as yui3
 import steelscript.scc.appfwk.datasources.scc as scc
 
 
-report = Report.create("SCC Appliance List", position=1)
+report = Report.create("SCC Appliance List", position=10)
 
 report.add_section()
 
