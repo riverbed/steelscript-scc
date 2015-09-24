@@ -208,8 +208,8 @@ The first line is called a shebang, it tells the system that the script should
 be executed using the program after '#!'. The ``SCCApp`` is imported for ease
 of writing scripts to generate reports for SCC. The
 :py:class:`BWTimeSeriesStatsReport <report.BWTimeSeriesStatsReport>` is
-imported to facilitate reporting data retrieved at resource 'bw_timeseries', which
-belongs to the 'cmc.stats' service on a SCC device.
+imported to facilitate reporting data retrieved at resource ``bw_timeseries``, which
+belongs to the ``cmc.stats`` service on a SCC device.
 
 .. code-block:: python
 
