@@ -1,0 +1,292 @@
+#ljmetas:
+#    tags: {'role': 'cmc_appliance_inventory'}
+
+$schema: 'http://support.riverbed.com/apis/service_def/2.2'
+id: 'http://support.riverbed.com/apis/cmc.appliance_inventory/1.0'
+provider: 'riverbed'
+name: cmc.appliance_inventory
+version: "1.0"
+title: SCC Appliance Inventory Service Definition
+defaultAuthorization: none
+
+types:
+    product_code:
+        type: string
+        description: The product code of the appliance
+        #  'sh', 'ex', 'ib', 'dva', 'gw' are deprecated and shouldnt be used
+        enum: ['SH', 'EX', 'IC', 'SMC', 'GC', 'sh', 'ex', 'ib', 'dva', 'gw']
+        readOnly: true
+
+    arch:
+        type: string
+        description: The architecture of the appliance
+        enum: ['x86_64', 'i386']
+        readOnly: true
+
+    version:
+        type: object
+        description: The version of a software image
+        readOnly: true
+        required: [version_id]
+        properties:
+            version_id:
+                type: string
+                description: A unique identifier for a version of a product. Is an amalgam of all the information in the following fields.
+            version_number:
+                type: string
+                description: The released version name. A dotted decimal with optional trailing characters to identify fix releases and customer specific releases.
+            build_number:
+                type: string
+                description: Build number. Distinguishes prerelease versions. For any given general availability version_number there is a specific build number.
+            build_timestamp:
+                type: string
+                description: The date/time of the build.
+
+    hostname:
+        description: Hostname
+        type: string
+        pattern: '^((([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9]))?$'
+        maxLength: 255
+
+    ipv4address:
+        description: IPv4 address (x.y.z.k)
+        type: string
+        pattern: '^((?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?))?$'
+
+    serial:
+        type: string
+        description: Serial number of the appliance
+        readOnly: true
+
+    uuid:
+        type: string
+        description: Unique identifier for the appliance
+        readOnly: true
+
+    health:
+        type: string
+        description: "Health of the appliance"
+        enum: ['critical', 'degraded', 'normal', 'unknown']
+        readOnly: true
+
+    address:
+        type: string
+        maxLength: 255
+        readOnly: true
+
+resources:
+
+  #############################################################################
+  # Riverbed Appliance Inventory Resources
+  #############################################################################
+    brief_appliances:
+        description: A collection of appliances managed by the SCC
+        type: array
+        items:
+            type: object
+            additionalProperties: false
+            properties:
+                id:
+                    type: integer
+                    description: Unique Appliance ID generated internally
+                    readOnly: true
+                serial:
+                    $ref: '#/types/serial'
+                uuid:
+                    $ref: '#/types/uuid'
+                model:
+                    type: string
+                    readOnly: true
+                    description: The model of the appliance
+                product_code:
+                    $ref: '#/types/product_code'
+                hostname:
+                    $ref: '#/types/hostname'
+                address:
+                    type: string
+                    description: "Address to reach the appliance. This is same as override address if override-address is specified else it is auto_detected_address."
+                    maxLength: 255
+                    readOnly: true
+                health:
+                    $ref: '#/types/health'       
+            relations:
+                full:
+                    resource: '#/resources/appliance'
+                    vars:
+                        id: "0/id"
+
+        links:
+            self:
+                path: "$/brief_appliances"
+                params:
+                    serial:
+                        $ref: '#/types/serial'
+                    uuid:
+                        $ref: '#/types/uuid'
+                    health:
+                        $ref: '#/types/health'
+            get:
+                description: Appliances managed by the CMC
+                method: GET
+                response:
+                    $ref: '#/resources/brief_appliances'
+
+
+
+    appliances:
+        description: A collection of appliances managed by the SCC
+        type: array
+        items:
+            $merge:
+                source: { $ref: '#/resources/appliance' }
+                with:
+                    relations:
+                        full:
+                            resource: '#/resources/appliance'
+                            vars:
+                                id: "0/id"
+
+        links:
+            self:
+                path: "$/appliances"
+                params:
+                    serial:
+                        $ref: '#/types/serial'
+                    uuid:
+                        $ref: '#/types/uuid'
+                    health:
+                        $ref: '#/types/health'
+            get:
+                description: Appliances managed by the SCC
+                method: GET
+                response:
+                    $ref: '#/resources/appliances'
+
+            create:
+                description: Add an appliance to the inventory
+                method: POST
+                request:
+                    $ref: '#/resources/appliance'
+                response:
+                    $ref: '#/resources/appliance'
+
+
+
+    appliance:
+        description: Information about an appliance
+        required: [serial, product_code]
+        type: object
+        additionalProperties: false
+        properties:
+            id:
+                type: integer
+                description: Unique Appliance ID generated internally
+                readOnly: true
+            serial:
+                $ref: '#/types/serial'
+            uuid:
+                $ref: '#/types/uuid'
+            model:
+                type: string
+                readOnly: true
+                description: The model of the appliance
+            product_code:
+                $ref: '#/types/product_code'
+            arch:
+                $ref: '#/types/arch'
+            version:
+                $ref: '#/types/version'
+            hostname:
+                $ref: '#/types/hostname'
+            address:
+                type: string
+                description: "Address to reach the appliance. This is same as override address if override-address is specified else it is auto_detected_address."
+                maxLength: 255
+                readOnly: true
+            auto_detected_address:
+                type: string
+                description: "Auto detected address to reach the appliance"
+                maxLength: 255
+                readOnly: true
+            override_address:
+                type: string
+                description: "User given address to reach the appliance"
+                maxLength: 255
+            time_zone:
+                type: string
+                description: Appliance time zone in the Olson database format
+            state:
+                description: Current state of the appliance
+                type: string
+                enum: ["blacklisted", "administratively_down", "read_only", "managed"]
+            health:
+                $ref: '#/types/health'
+            connectivity:
+                type: object
+                description: Status of the appliance
+                additionalProperties: false
+                required: [mode, ocs_connected, gcl_connected]
+                readOnly: true
+                properties:
+                    mode:
+                        type: string
+                        description: Type of requests allowed
+                        enum: ["full", "heartbeat_only"]
+                    ocs_connected:
+                        type: boolean
+                        description: Status of the OCS-OCD connection
+                    ocs_address:
+                        $ref: '#/types/address'
+                    gcl_connected:
+                        type: boolean
+                        description: Status of the GCL connection
+                    gcl_address:
+                        $ref: '#/types/address'
+            interfaces:
+                type: array
+                description: Interfaces of the appliance
+                items:
+                    type: object
+                    description: Interface of the appliance
+                    additionalProperties: false
+                    readOnly: true
+                    properties:
+                        name:
+                            type: string
+                            description: Name of the interface
+                        enabled:
+                            type: boolean
+                            description: Interface enabled or not
+                        ip_addr:
+                            $ref: '#/types/ipv4address'
+                        mask_len:
+                            type: integer
+                            description: Mask length of the ipadress
+                            maximum: 32
+                            minimum: 0
+        links:
+            self:
+                description: URI for instance of an appliance
+                path: "$/appliances/items/{id}"
+
+            get:
+                description: Get the current state of an appliance.
+                method: GET
+                response:
+                    $ref: '#/resources/appliance'
+
+            set:
+                description: Replace the data representation for an appliance.
+                method: PUT
+                request:
+                    $ref: '#/resources/appliance'
+                response:
+                    $ref: '#/resources/appliance'
+
+            delete:
+                description: Remove the appliance from AI.
+                method: DELETE
+
+        relations:
+            instances:
+                resource: '#/resources/appliances'
