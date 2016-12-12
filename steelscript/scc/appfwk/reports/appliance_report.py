@@ -22,7 +22,7 @@ The typical structure is as follows:
 See the documeantion or sample plugin for more details
 """
 from steelscript.appfwk.apps.report.models import Report
-import steelscript.appfwk.apps.report.modules.yui3 as yui3
+import steelscript.appfwk.apps.report.modules.tables as tables
 
 # Import the datasource module for this plugin (if needed)
 import steelscript.scc.appfwk.datasources.scc as scc
@@ -39,5 +39,5 @@ table.add_column('hostname', 'Appliance Host Name', datatype="string")
 table.add_column('serial', 'Appliance Serial Number', datatype="string")
 table.add_column('time_zone', 'Appliance Time Zone', datatype="string")
 
-report.add_widget(yui3.TableWidget, table, "Appliance List",
+report.add_widget(tables.TableWidget, table, "Appliance List",
                   height=300, width=12)

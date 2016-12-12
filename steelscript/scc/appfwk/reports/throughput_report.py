@@ -22,7 +22,7 @@ The typical structure is as follows:
 See the documeantion or sample plugin for more details
 """
 from steelscript.appfwk.apps.report.models import Report
-import steelscript.appfwk.apps.report.modules.yui3 as yui3
+import steelscript.appfwk.apps.report.modules.c3 as c3
 
 # Import the datasource module for this plugin (if needed)
 import steelscript.scc.appfwk.datasources.scc as scc
@@ -40,5 +40,5 @@ table.add_column('wan_out', 'outbound wan traffic', units='B/s')
 table.add_column('lan_in', 'inbound lan traffic', units='B/s')
 table.add_column('lan_out', 'outbound lan traffic', units='B/s')
 
-report.add_widget(yui3.TimeSeriesWidget, table, "SCC Device Throughput",
+report.add_widget(c3.TimeSeriesWidget, table, "SCC Device Throughput",
                   height=300, width=12)
