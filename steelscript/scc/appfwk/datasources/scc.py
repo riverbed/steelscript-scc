@@ -28,6 +28,7 @@ class BaseSCCTable(DatasourceTable):
     """
     class Meta:
         proxy = True
+        app_label = 'steelscript.scc.appfwk'
 
     _query_class = 'BaseSCCQuery'
 
@@ -43,6 +44,7 @@ class BaseSCCStatsTable(BaseSCCTable):
     """
     class Meta:
         proxy = True
+        app_label = 'steelscript.scc.appfwk'
 
     _query_class = 'BaseSCCStatsQuery'
 
@@ -71,6 +73,7 @@ class SCCThroughputTable(BaseSCCStatsTable):
     """
     class Meta:
         proxy = True
+        app_label = 'steelscript.scc.appfwk'
 
     _query_class = 'SCCThroughputQuery'
 
@@ -107,6 +110,7 @@ class BaseSCCApplInvtTable(BaseSCCTable):
     directly used in reports"""
     class Meta:
         proxy = True
+        app_label = 'steelscript.scc.appfwk'
 
     _query_class = 'BaseSCCApplInvtQuery'
 
@@ -117,6 +121,7 @@ class SCCAppliancesTable(BaseSCCApplInvtTable):
     """
     class Meta:
         proxy = True
+        app_label = 'steelscript.scc.appfwk'
 
     _query_class = 'SCCAppliancesQuery'
 
