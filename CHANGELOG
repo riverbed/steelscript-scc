@@ -1,5 +1,8 @@
 CHANGELOG
 =========
 
+[0.7.1]
+* Django 1.8 compatibility
+
 [0.7]
  * Update reports to use c3 library. YUI deprecated.
