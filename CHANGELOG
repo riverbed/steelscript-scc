@@ -1,6 +1,9 @@
 CHANGELOG
 =========
 
+[0.7.2]
+ * Workaround for PyPI upload bug
+
 [0.7.1]
 * Django 1.8 compatibility
 
