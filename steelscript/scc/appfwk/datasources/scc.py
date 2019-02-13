@@ -100,7 +100,7 @@ class SCCThroughputTable(BaseSCCStatsTable):
                            label='Traffic Type',
                            field_cls=forms.ChoiceField,
                            field_kwargs={'choices':
-                                         zip(traffic_types, traffic_types)})
+                                         list(zip(traffic_types, traffic_types))})
         field.save()
         self.fields.add(field)
 
