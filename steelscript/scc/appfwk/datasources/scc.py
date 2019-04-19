@@ -183,7 +183,7 @@ class BaseSCCQuery(TableQueryBase):
         criteria = self.job.criteria
 
         if criteria.scc_device == '':
-            logger.debug('%s: No scc device selected' % (self.table))
+            logger.debug('%s: No scc device selected' % self.table)
             self.job.mark_error("No SCC Device Selected")
             return False
 

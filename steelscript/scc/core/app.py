@@ -16,6 +16,9 @@ class SCCApp(Application):
         self.scc = None
 
     def parse_args(self):
+        # [mzetea] = Application and Command classes in steelscript do not implement "parse_args"
+        # what should actually be called here? Command has "parse" method implemented is that what is intended?
+
         super(SCCApp, self).parse_args()
 
     def add_positional_args(self):
