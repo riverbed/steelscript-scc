@@ -5,38 +5,42 @@
 # as set forth in the License.
 
 
-
 import sys
 import itertools
 from glob import glob
 
-try:
-    from setuptools import setup, find_packages
-    from setuptools.command.test import test as TestCommand
-except ImportError:
-    raise ImportError(
-        'The setuptools package is required to install this library. See '
-        '"https://pypi.python.org/pypi/setuptools#installation-instructions" '
-        'for further instructions.'
-    )
+
+from setuptools import setup, find_packages
+from setuptools.command.test import test as TestCommand
 
 from gitpy_versioning import get_version
 
 
 class PyTest(TestCommand):
+    user_options = [("pytest-args=", "a", "Arguments to pass to pytest")]
+
+    def initialize_options(self):
+        TestCommand.initialize_options(self)
+        self.pytest_args = ""
+
     def finalize_options(self):
         TestCommand.finalize_options(self)
         self.test_args = []
         self.test_suite = True
 
     def run_tests(self):
+        import shlex
+
         # import here, cause outside the eggs aren't loaded
         import pytest
-        errno = pytest.main("%s tests" % " ".join(self.test_args))
+        errno = pytest.main(shlex.split(self.pytest_args))
         sys.exit(errno)
+
 
 test = ['pytest', 'testfixtures', 'mock']
 doc = ['sphinx']
+install_requires = ['steelscript>=2.0a1', 'sleepwalker>=2.0a1', 'reschema==2.0a2']
+setup_requires = ['pytest-runner']
 
 setup(
     name='steelscript.scc',
@@ -70,8 +74,7 @@ http://pythonhosted.org/steelscript/
         'Intended Audience :: Information Technology',
         'Intended Audience :: System Administrators',
         'License :: OSI Approved :: MIT License',
-        'Programming Language :: Python :: 2.6',
-        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3.5',
         'Topic :: System :: Networking',
     ],
 
@@ -83,14 +86,15 @@ http://pythonhosted.org/steelscript/
         ('share/doc/steelscript/examples/scc', glob('examples/*')),
     ),
 
-    install_requires=['reschema', 'sleepwalker', 'steelscript>=0.9.6'],
+    install_requires=install_requires,
+    setup_requires=setup_requires,
     extras_require={'test': test,
                     'doc': doc,
                     'dev': [p for p in itertools.chain(test, doc)],
                     'all': []
                     },
     tests_require=test,
-    cmdclass={'test': PyTest},
+    cmdclass={'pytest': PyTest},
     entry_points={
         'portal.plugins': ['SCC = steelscript.scc.appfwk.plugin:SCCPlugin']}
 )
