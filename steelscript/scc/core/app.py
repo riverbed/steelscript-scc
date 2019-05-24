@@ -15,8 +15,8 @@ class SCCApp(Application):
         super(SCCApp, self).__init__(*args, **kwargs)
         self.scc = None
 
-    def parse_args(self):
-        super(SCCApp, self).parse_args()
+    def validate_args(self):
+        super(SCCApp, self).validate_args()
 
     def add_positional_args(self):
         self.add_positional_arg(

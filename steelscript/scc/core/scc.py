@@ -79,11 +79,10 @@ class SCCServerConnectionHook(sleepwalker.connection.ConnectionHook):
         return svc.conn
 
 
-class SCCServiceManager(ServiceManager):
+class SCCServiceManager(ServiceManager, metaclass=Singleton):
     """This class encapsulates the storage of SCC services
     and connection with the SCC device.
     """
-    __metaclass__ = Singleton
 
     def __new__(cls):
         """Create a SCCServiceManager instance"""

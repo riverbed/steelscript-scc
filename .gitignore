@@ -7,3 +7,6 @@ RELEASE-VERSION
 *.pyc
 *.swp
 .DS_Store
+ve/
+.eggs/
+.idea/

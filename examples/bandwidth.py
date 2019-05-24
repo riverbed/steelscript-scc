@@ -24,7 +24,7 @@ class BWStatsReportApp(SCCApp):
         parser.add_option(
             '--report', dest='report',
             help='Report name should be one of the following: %s.' %
-            ', '.join(self.class_map.keys()))
+            ', '.join(list(self.class_map.keys())))
 
         parser.add_option(
             '--timefilter', dest='timefilter', default='last 1 hour',
@@ -53,7 +53,7 @@ class BWStatsReportApp(SCCApp):
             self.parser.error("Report name is required")
         elif r not in self.class_map:
             self.parser.error("Report should be one of the following: %s." %
-                              ', '.join(self.class_map.keys()))
+                              ', '.join(list(self.class_map.keys())))
 
         if self.options.traffic_type not in self.traffic_types:
             self.parser.error("Traffic type should be one of the following: "

@@ -6,7 +6,7 @@
 
 import logging
 
-from steelscript.netprofiler.core.filters import TimeFilter
+from steelscript.netprofiler.core.filters import TimeFilter # [mzetea] - shouldn't netprofiler be added as a dependency?
 from steelscript.common.timeutils import datetime_to_seconds
 
 # Below are mappings from resource to report class
@@ -128,7 +128,7 @@ class BaseSCCReport(object):
             self.data = self.response.data
         else:
             raise SCCException('data_key %s is invalid for %s'
-                               % (self.data_key, self._class__.__name__))
+                               % (self.data_key, self.__class__.__name__))
 
 
 class BaseStatsReport(BaseSCCReport):
