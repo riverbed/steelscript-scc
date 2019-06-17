@@ -54,7 +54,7 @@ setup(
     license='MIT',
     description='SteelScript support for SteelCentral Controller',
     long_description="""SteelScript for SteelCentral Controller
-===================================
+=======================================
 
 SteelScript is a collection of libraries and scripts in Python and
 JavaScript for interacting with Riverbed Technology devices.
