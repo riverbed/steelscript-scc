@@ -39,7 +39,9 @@ class PyTest(TestCommand):
 
 test = ['pytest', 'testfixtures', 'mock']
 doc = ['sphinx']
-install_requires = ['steelscript>=2.0a1', 'sleepwalker>=2.0a1', 'reschema==2.0a2']
+install_requires = ['steelscript>=2.0',
+                    'sleepwalker>=2.0',
+                    'reschema==2.0']
 setup_requires = ['pytest-runner']
 
 setup(
