@@ -1,4 +1,4 @@
-# Copyright (c) 2019 Riverbed Technology, Inc.
+# Copyright (c) 2019-2024 Riverbed Technology, Inc.
 #
 # This software is licensed under the terms and conditions of the MIT License
 # accompanying the software ("License").  This software is distributed "AS IS"
@@ -42,7 +42,6 @@ setup_requires = ['pytest-runner']
 
 setup(
     name='steelscript.scc',
-    namespace_packages=['steelscript'],
     version= '24.2.1',
     author='Riverbed Technology',
     author_email='eng-github@riverbed.com',
