@@ -1,4 +1,4 @@
-# Copyright (c) 2019 Riverbed Technology, Inc.
+# Copyright (c) 2019-2024 Riverbed Technology, Inc.
 #
 # This software is licensed under the terms and conditions of the MIT License
 # accompanying the software ("License").  This software is distributed "AS IS"
@@ -9,12 +9,8 @@ import sys
 import itertools
 from glob import glob
 
-
 from setuptools import setup, find_packages
 from setuptools.command.test import test as TestCommand
-
-from gitpy_versioning import get_version
-
 
 class PyTest(TestCommand):
     user_options = [("pytest-args=", "a", "Arguments to pass to pytest")]
@@ -39,15 +35,14 @@ class PyTest(TestCommand):
 
 test = ['pytest', 'testfixtures', 'mock']
 doc = ['sphinx']
-install_requires = ['steelscript>=2.0',
+install_requires = ['steelscript>=24.2.0',
                     'sleepwalker>=2.0',
                     'reschema==2.0']
 setup_requires = ['pytest-runner']
 
 setup(
     name='steelscript.scc',
-    namespace_packages=['steelscript'],
-    version=get_version(),
+    version= '24.2.1',
     author='Riverbed Technology',
     author_email='eng-github@riverbed.com',
     url='http://pythonhosted.org/steelscript',
@@ -76,7 +71,7 @@ http://pythonhosted.org/steelscript/
         'Intended Audience :: Information Technology',
         'Intended Audience :: System Administrators',
         'License :: OSI Approved :: MIT License',
-        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.12',
         'Topic :: System :: Networking',
     ],
 
